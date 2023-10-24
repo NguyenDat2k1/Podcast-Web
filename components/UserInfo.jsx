@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
-
+import {useState } from "react";
 
 export default function UserInfo() {
   const { data: session } = useSession();
@@ -16,9 +16,17 @@ export default function UserInfo() {
     { id: 6, title: 'Item 6' },
   ,
   ];
+
+  
+    const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  
+    const toggleProfileMenu = () => {
+      setProfileMenuOpen(!profileMenuOpen);
+    };
+  
   return (
    <div>
-   <nav className="bg-blue-500 p-4">
+   {/* <nav className="bg-blue-500 p-4">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/">
           <p className="text-white text-2xl font-bold">Trang Chủ</p>
@@ -44,9 +52,45 @@ export default function UserInfo() {
           </li>
         </ul>
       </div>
-    </nav>
+    </nav> */}
+   <nav className="bg-blue-400 p-4">
+  <div className="container mx-auto flex justify-between items-center">
+    <Link href="/">
+      <p className="text-white text-2xl font-bold">Trang Chủ</p>
+    </Link>
+    <ul className="flex space-x-4">
+      <li>
+        <Link href="/about">
+          <p className="text-white">Giới Thiệu</p>
+        </Link>
+      </li>
+      <li>
+        <Link href="/register">
+          <p className="text-white">Register</p>
+        </Link>
+      </li>
+      <li className="relative">
+        <button className="text-white" onClick={() => toggleProfileMenu()}>
+        {session?.user?.name}
+        </button>
+        {profileMenuOpen && (
+          <div className="absolute top-full left-0 bg-blue-400 w-48 mt-2">
+            <Link href="/profile">
+              <div className="p-2 hover:bg-blue-700">Trang Cá Nhân</div>
+            </Link>
+            <div className="p-2 hover:bg-blue-700" onClick={() => signOut()}>
+              Log Out
+            </div>
+          </div>
+        )}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+
     
-    <div className="bg-yellow-400 p-4 text-center h-96">
+    <div className="bg-gray-300 p-4 text-center h-96">
         Đây là banner của bạn. Bạn có thể tùy chỉnh nội dung và kiểu dáng của banner tại đây.
       </div>
     <div
