@@ -26,33 +26,7 @@ export default function UserInfo() {
   
   return (
    <div>
-   {/* <nav className="bg-blue-500 p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link href="/">
-          <p className="text-white text-2xl font-bold">Trang Chủ</p>
-        </Link>
-        <ul className="flex space-x-4">
-          <li>
-            <Link href="/about">
-              <p className="text-white">Giới Thiệu</p>
-            </Link>
-          </li>
-          <li>
-            <Link href={"/register"}>
-              <p className="text-white">Register</p>
-            </Link>
-          </li>
-          <li>
-          <button
-          onClick={() => signOut()}
-          className=" text-white "
-        >
-          Log Out
-        </button>
-          </li>
-        </ul>
-      </div>
-    </nav> */}
+   
    <nav className="bg-blue-400 p-4">
   <div className="container mx-auto flex justify-between items-center">
     <Link href="/">
