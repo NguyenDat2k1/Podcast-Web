@@ -5,11 +5,12 @@ import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { redirect } from "next/navigation";
+import Navbar from "./Navbar";
 
 export default function Profile() {
   const { data: session } = useSession();
 
-  if (session) redirect("/login");
+  if (!session) redirect("/login");
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
@@ -77,7 +78,7 @@ export default function Profile() {
   };
   return (
     <div>
-      <nav className="bg-blue-400 p-4">
+      {/* <nav className="bg-blue-400 p-4">
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/">
             <p className="text-white text-2xl font-bold">Trang Chủ</p>
@@ -116,8 +117,8 @@ export default function Profile() {
             </li>
           </ul>
         </div>
-      </nav>
-
+      </nav> */}
+<Navbar/>
       <div className="flex h-screen items-center justify-center">
         <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-1/2">
           <div className="mb-4">

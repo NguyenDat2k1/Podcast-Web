@@ -17,14 +17,17 @@ export const authOptions = {
                 try {
                     await connectMongoDB();
                     const user= await User.findOne({ email});
+                   
 
                     if (!user){
                         return null;
                     }
                     const passwordsMatch = await bcrypt.compare(password, user.password);
+
                 if(!passwordsMatch){
                     return null;
                 }
+               
                 return user;
                 } catch (error) {
                     console.log("Error: ", error);
