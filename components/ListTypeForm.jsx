@@ -2,11 +2,12 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import Navbar from "./Navbar";
 
 export default function ListTypeForm() {
   const { data: session } = useSession();
+  const router = useRouter();
 
   if (!session) redirect("/login");
 
@@ -19,14 +20,9 @@ export default function ListTypeForm() {
     { id: 6, title: "Item 6" },
     ,
   ];
-  const [showPopup, setShowPopup] = useState(null);
 
-  const openPopup = (id) => {
-    setShowPopup(id);
-  };
-
-  const closePopup = () => {
-    setShowPopup(null);
+  const handleBlockClick = (id) => {
+    router.push(`/listType/${id}`);
   };
   return (
     <div>
@@ -36,67 +32,12 @@ export default function ListTypeForm() {
           <div
             key={item.id}
             className="border-2 border-black p-4 h-72 cursor-pointer"
-            onClick={() => openPopup(item.id)}
+            onClick={() => handleBlockClick(item.id)}
           >
             {item.title}
           </div>
         ))}
       </div>
-
-      {showPopup !== null && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-700 bg-opacity-50">
-          <div className="bg-white p-4 rounded shadow-lg">
-            <div className="mb-4">
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Tên:
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                className="mt-1 p-2 block w-full border rounded-md"
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Mô tả:
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                className="mt-1 p-2 block w-full border rounded-md"
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                htmlFor="audio"
-                className="block text-sm font-medium text-gray-700"
-              >
-                File âm thanh:
-              </label>
-              <input
-                type="file"
-                id="audio"
-                name="audio"
-                accept="audio/*"
-                className="mt-1 block"
-              />
-            </div>
-            <button
-              className="bg-blue-500 text-white py-2 px-4 rounded-md"
-              onClick={closePopup}
-            >
-              Lưu
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
