@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
 export default function LevelDetail({ params }) {
   const { level } = params;
@@ -67,12 +68,11 @@ export default function LevelDetail({ params }) {
       audioDownloadLink: "path-to-audio10.mp3",
       textDownloadLink: "path-to-text10.txt",
     },
-    
   ];
 
   return (
     <div>
-     
+      <Navbar />
       <h1>Chi tiết khối block {level}</h1>
 
       <div className="grid grid-cols-4 gap-4">
@@ -98,5 +98,3 @@ export default function LevelDetail({ params }) {
     </div>
   );
 }
-
-
