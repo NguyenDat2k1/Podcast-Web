@@ -14,6 +14,7 @@ const Navbar = () => {
   const toggleProfileMenu = () => {
     setProfileMenuOpen(!profileMenuOpen);
   };
+ 
   return (
     <div>
       <nav className="bg-blue-400 p-4">
@@ -63,12 +64,16 @@ const Navbar = () => {
                   <Link href="/profile">
                     <div className="p-2 hover:bg-blue-700">Trang Cá Nhân</div>
                   </Link>
-                  <div
-                    className="p-2 hover-bg-blue-700"
+                  {/* <div
+                    className="p-2 hover-bg-blue-700 cursor-pointer"
                     onClick={() => signOut()}
+                   
                   >
                     Log Out
-                  </div>
+                  </div> */}
+                  <Link href="/login">
+                    <div className="p-2 hover:bg-blue-700">Logout</div>
+                  </Link>
                 </div>
               )}
             </li>

@@ -1,15 +1,16 @@
 "use client";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
 import { redirect, useRouter } from "next/navigation";
+
 import Navbar from "./Navbar";
 
-export default function ListTypeForm() {
+export default  function ListTypeForm() {
   const { data: session } = useSession();
+ 
   const router = useRouter();
-
-  if (!session) redirect("/login");
+ 
+  // if (!session) redirect("/login");
 
   const items = [
     { id: 1, title: "Item 1" },
