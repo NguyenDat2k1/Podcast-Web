@@ -1,12 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 
 export default function LevelDetail({ params }) {
   const { level } = params;
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-  // Danh sách các khối content
+  const handleSearch = (searchQuery) => {};
+
+  const openPopup = () => {
+    setIsPopupOpen(true);
+  };
+
+  const closePopup = () => {
+    setIsPopupOpen(false);
+  };
+
   const blocks = [
     {
       title: "Block 1",
@@ -73,11 +84,78 @@ export default function LevelDetail({ params }) {
   return (
     <div>
       <Navbar />
-      <h1>Chi tiết khối block {level}</h1>
+      <div className="flex justify-between items-center p-4 bg-gray-200">
+        <div className="flex space-x-2">
+          <input
+            type="text"
+            placeholder="Tìm kiếm..."
+            className="border border-gray-400 px-2 py-1 rounded-md"
+            onInput={(e) => handleSearch(e.target.value)}
+          />
+          <button
+            className="bg-blue-500 text-white px-2 py-1 rounded-md"
+            onClick={() => openPopup()}
+          >
+            Thêm
+          </button>
+        </div>
+      </div>
+      {isPopupOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-4 rounded-lg">
+            <form>
+              <div className="mb-4">
+                <label
+                  htmlFor="audioFile"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Tệp âm thanh
+                </label>
+                <input
+                  type="file"
+                  id="audioFile"
+                  accept="audio/*"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  onChange={(e) => setAudioFile(e.target.files[0])}
+                />
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="textFile"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Tệp văn bản
+                </label>
+                <input
+                  type="file"
+                  id="textFile"
+                  accept=".txt"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  onChange={(e) => setTextFile(e.target.files[0])}
+                />
+              </div>
+              <button
+                type="button"
+                className="bg-blue-500 text-white px-2 py-1 rounded-md"
+                // onClick={handleSave}
+              >
+                Lưu
+              </button>
+              <button type="button" onClick={closePopup}>
+                Đóng
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+      <h1 className="mt-16">Chi tiết khối block {level}</h1>
 
       <div className="grid grid-cols-4 gap-4">
         {blocks.map((block) => (
-          <div className="border border-gray-300 p-4" key={block.title}>
+          <div
+            className="border border-gray-300 p-4 relative"
+            key={block.title}
+          >
             <h2>{block.title}</h2>
 
             <audio controls>
@@ -92,6 +170,16 @@ export default function LevelDetail({ params }) {
             <a href={block.textDownloadLink} download>
               <span className="mr-2">&#8226;</span> Tải tệp văn bản xuống
             </a>
+
+            {/* Nút Xóa */}
+            <button className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded">
+              Xóa
+            </button>
+
+            {/* Nút Sửa */}
+            <button className="absolute top-0 right-8 bg-green-500 text-white p-1 rounded">
+              Sửa
+            </button>
           </div>
         ))}
       </div>
