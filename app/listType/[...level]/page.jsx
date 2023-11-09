@@ -3,10 +3,53 @@
 import { useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { redirect, useRouter } from "next/navigation";
+import YouTube from "react-youtube";
+import { analytics } from "@/components/Firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function LevelDetail({ params }) {
   const { level } = params;
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [fileupload, setfileupload] = useState(null);
+  const [videoSource, setVideoSource] = useState("");
+
+  const handleVideoInputChange = (e) => {
+    setVideoSource(e.target.value);
+  };
+
+  const getYouTubeId = (url) => {
+    const match = url.match(
+      /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
+    return match && match[1];
+  };
+
+  const youtubeOpts = {
+    width: "100%",
+    playerVars: {
+      autoplay: 1,
+    },
+  };
+
+  const handleSave = async () => {
+    console.log(fileupload);
+    if (fileupload !== null) {
+      const fileref = ref(analytics, `${level}/`);
+
+      try {
+        const snapshot = await uploadBytes(fileref, fileupload[0]);
+        const url = await getDownloadURL(snapshot.ref);
+        console.log("url", url);
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      }
+    } else {
+      alert("pls select file");
+    }
+  };
+
+  const router = useRouter();
 
   const handleSearch = (searchQuery) => {};
 
@@ -80,7 +123,9 @@ export default function LevelDetail({ params }) {
       textDownloadLink: "path-to-text10.txt",
     },
   ];
-
+  const handleBlockClick = (title) => {
+    router.push(`/detailPage/${level}/${title}`);
+  };
   return (
     <div>
       <Navbar />
@@ -106,6 +151,58 @@ export default function LevelDetail({ params }) {
             <form>
               <div className="mb-4">
                 <label
+                  htmlFor="podcastName"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Tên Podcast
+                </label>
+                <input
+                  type="text"
+                  id="podcastName"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  // Gán giá trị vào state hoặc thực hiện xử lý phù hợp ở đây
+                />
+              </div>
+
+              <div className="mb-4">
+                <label
+                  htmlFor="level"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Level Podcast
+                </label>
+                <input
+                  type="text"
+                  id="level"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  // Gán giá trị vào state hoặc thực hiện xử lý phù hợp ở đây
+                />
+              </div>
+
+              <div className="mb-4">
+                <label
+                  htmlFor="videoFile"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Video Podcast
+                </label>
+                <input
+                  type="text"
+                  id="videoFile"
+                  placeholder="Nhập đường dẫn video từ YouTube"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full mb-2"
+                  onChange={handleVideoInputChange}
+                />
+                {videoSource && (
+                  <YouTube
+                    videoId={getYouTubeId(videoSource)}
+                    opts={youtubeOpts}
+                  />
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label
                   htmlFor="audioFile"
                   className="block text-gray-700 text-sm font-bold mb-2"
                 >
@@ -116,9 +213,10 @@ export default function LevelDetail({ params }) {
                   id="audioFile"
                   accept="audio/*"
                   className="border border-gray-400 px-2 py-1 rounded-md w-full"
-                  onChange={(e) => setAudioFile(e.target.files[0])}
+                  onChange={(e) => setAudioFile(e.target.files)}
                 />
               </div>
+
               <div className="mb-4">
                 <label
                   htmlFor="textFile"
@@ -134,10 +232,11 @@ export default function LevelDetail({ params }) {
                   onChange={(e) => setTextFile(e.target.files[0])}
                 />
               </div>
+
               <button
                 type="button"
                 className="bg-blue-500 text-white px-2 py-1 rounded-md"
-                // onClick={handleSave}
+                onClick={handleSave}
               >
                 Lưu
               </button>
@@ -153,8 +252,9 @@ export default function LevelDetail({ params }) {
       <div className="grid grid-cols-4 gap-4">
         {blocks.map((block) => (
           <div
-            className="border border-gray-300 p-4 relative"
+            className="border border-gray-300 p-4 relative cursor-pointer"
             key={block.title}
+            onClick={() => handleBlockClick(block.title)}
           >
             <h2>{block.title}</h2>
 
