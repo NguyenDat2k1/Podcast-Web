@@ -1,19 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { redirect, useRouter } from "next/navigation";
 import YouTube from "react-youtube";
 import { analytics } from "@/components/Firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  getStorage,
+  listAll,
+} from "firebase/storage";
 
 export default function LevelDetail({ params }) {
   const { level } = params;
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [fileupload, setfileupload] = useState(null);
+  const [podcastName, setPodcastName] = useState("");
   const [videoSource, setVideoSource] = useState("");
+  const [textFile, setTextFile] = useState(null);
+  const [audioFile, setAudioFile] = useState(null);
 
+  const storage = getStorage();
+  const audioPath = ref(analytics, `${level}/${podcastName}`);
+  const transcriptPath = ref(analytics, `Transcripts/`);
+  const listAudio = ref(storage, audioPath);
+  const listTranscript = ref(storage, transcriptPath);
+
+  listAll(audioPath)
+    .then((audioList) => {
+      // In danh sách file audio ra màn hình
+      console.log("Danh sách file audio:");
+      audioList.items.forEach((audioFile) => {
+        console.log(audioFile.name);
+      });
+    })
+    .catch((error) => {
+      console.error("Lỗi khi lấy danh sách file audio:", error);
+    });
+
+  // Lấy danh sách các file transcript
+  listAll(transcriptPath)
+    .then((transcriptList) => {
+      // In danh sách file transcript ra màn hình
+      console.log("Danh sách file transcript:");
+      transcriptList.items.forEach((transcriptFile) => {
+        console.log(transcriptFile.name);
+      });
+    })
+    .catch((error) => {
+      console.error("Lỗi khi lấy danh sách file transcript:", error);
+    });
+
+  const blockList = {};
   const handleVideoInputChange = (e) => {
     setVideoSource(e.target.value);
   };
@@ -33,25 +73,47 @@ export default function LevelDetail({ params }) {
   };
 
   const handleSave = async () => {
-    console.log(fileupload);
-    if (fileupload !== null) {
-      const fileref = ref(analytics, `${level}/`);
-
+    if (audioFile !== null) {
+      console.log("Audio File:", audioFile);
+      const audioRef = ref(analytics, `${level}/${podcastName}`);
       try {
-        const snapshot = await uploadBytes(fileref, fileupload[0]);
-        const url = await getDownloadURL(snapshot.ref);
-        console.log("url", url);
-      } catch (error) {
-        console.error("Error uploading file:", error);
+        if (audioFile[0].type.startsWith("audio/")) {
+          // Xử lý audio file
+          const audioSnapshot = await uploadBytes(audioRef, audioFile[0]);
+          const audioUrl = await getDownloadURL(audioSnapshot.ref);
+          console.log("Audio URL:", audioUrl);
+        } else {
+          console.error("Invalid audio file format");
+        }
+      } catch (audioError) {
+        console.error("Error uploading audio file:", audioError);
       }
     } else {
-      alert("pls select file");
+      alert("Please select audio file");
+      return;
+    }
+
+    if (textFile !== null) {
+      console.log("Text File:", textFile);
+      const textRef = ref(analytics, `Transcripts/${level}-${podcastName}`);
+      try {
+        if (!textFile[0].type.startsWith("audio/")) {
+          // Xử lý text file
+          const textSnapshot = await uploadBytes(textRef, textFile[0]);
+          const textUrl = await getDownloadURL(textSnapshot.ref);
+          console.log("Text URL:", textUrl);
+        } else {
+          console.error("Invalid text file format");
+        }
+      } catch (textError) {
+        console.error("Error uploading text file:", textError);
+      }
+    } else {
+      alert("Please select text file");
     }
   };
 
   const router = useRouter();
-
-  const handleSearch = (searchQuery) => {};
 
   const openPopup = () => {
     setIsPopupOpen(true);
@@ -160,7 +222,8 @@ export default function LevelDetail({ params }) {
                   type="text"
                   id="podcastName"
                   className="border border-gray-400 px-2 py-1 rounded-md w-full"
-                  // Gán giá trị vào state hoặc thực hiện xử lý phù hợp ở đây
+                  value={podcastName}
+                  onChange={(e) => setPodcastName(e.target.value)}
                 />
               </div>
 
@@ -175,7 +238,6 @@ export default function LevelDetail({ params }) {
                   type="text"
                   id="level"
                   className="border border-gray-400 px-2 py-1 rounded-md w-full"
-                  // Gán giá trị vào state hoặc thực hiện xử lý phù hợp ở đây
                 />
               </div>
 
@@ -229,7 +291,7 @@ export default function LevelDetail({ params }) {
                   id="textFile"
                   accept=".txt"
                   className="border border-gray-400 px-2 py-1 rounded-md w-full"
-                  onChange={(e) => setTextFile(e.target.files[0])}
+                  onChange={(e) => setTextFile(e.target.files)}
                 />
               </div>
 

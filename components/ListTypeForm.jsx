@@ -5,20 +5,18 @@ import { redirect, useRouter } from "next/navigation";
 
 import Navbar from "./Navbar";
 
-export default  function ListTypeForm() {
+export default function ListTypeForm() {
   const { data: session } = useSession();
- 
+
   const router = useRouter();
- 
-  // if (!session) redirect("/login");
 
   const items = [
-    { id: 1, title: "Item 1" },
-    { id: 2, title: "Item 2" },
-    { id: 3, title: "Item 3" },
-    { id: 4, title: "Item 4" },
-    { id: 5, title: "Item 5" },
-    { id: 6, title: "Item 6" },
+    { id: "A1", title: "Item 1" },
+    { id: "A2", title: "Item 2" },
+    { id: "B1", title: "Item 3" },
+    { id: "B2", title: "Item 4" },
+    { id: "C1", title: "Item 5" },
+    { id: "C2", title: "Item 6" },
     ,
   ];
 
