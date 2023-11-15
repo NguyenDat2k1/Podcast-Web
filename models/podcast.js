@@ -6,21 +6,21 @@ const podcastSchema = new Schema(
       type: String,
       required: true,
     },
-    text: {
+    level: {
       type: String,
       required: true,
     },
-    type: {
+    audioPath: {
       type: String,
       required: true,
     },
-    kind: {
+    transcriptPath: {
       type: String,
       required: true,
     },
     ytbPath: {
       type: String,
-      required: true,
+      default: "test",
     },
   },
   { timestamps: true }

@@ -6,13 +6,7 @@ import Navbar from "@/components/Navbar";
 import { redirect, useRouter } from "next/navigation";
 import YouTube from "react-youtube";
 import { analytics } from "@/components/Firebase";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  getStorage,
-  listAll,
-} from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function LevelDetail({ params }) {
   const { level } = params;
@@ -21,39 +15,10 @@ export default function LevelDetail({ params }) {
   const [videoSource, setVideoSource] = useState("");
   const [textFile, setTextFile] = useState(null);
   const [audioFile, setAudioFile] = useState(null);
+  const [name, setName] = useState("");
+  let audioPath = "";
+  let transcriptPath = "";
 
-  const storage = getStorage();
-  const audioPath = ref(analytics, `${level}/${podcastName}`);
-  const transcriptPath = ref(analytics, `Transcripts/`);
-  const listAudio = ref(storage, audioPath);
-  const listTranscript = ref(storage, transcriptPath);
-
-  listAll(audioPath)
-    .then((audioList) => {
-      // In danh sách file audio ra màn hình
-      console.log("Danh sách file audio:");
-      audioList.items.forEach((audioFile) => {
-        console.log(audioFile.name);
-      });
-    })
-    .catch((error) => {
-      console.error("Lỗi khi lấy danh sách file audio:", error);
-    });
-
-  // Lấy danh sách các file transcript
-  listAll(transcriptPath)
-    .then((transcriptList) => {
-      // In danh sách file transcript ra màn hình
-      console.log("Danh sách file transcript:");
-      transcriptList.items.forEach((transcriptFile) => {
-        console.log(transcriptFile.name);
-      });
-    })
-    .catch((error) => {
-      console.error("Lỗi khi lấy danh sách file transcript:", error);
-    });
-
-  const blockList = {};
   const handleVideoInputChange = (e) => {
     setVideoSource(e.target.value);
   };
@@ -82,6 +47,7 @@ export default function LevelDetail({ params }) {
           const audioSnapshot = await uploadBytes(audioRef, audioFile[0]);
           const audioUrl = await getDownloadURL(audioSnapshot.ref);
           console.log("Audio URL:", audioUrl);
+          audioPath = audioUrl;
         } else {
           console.error("Invalid audio file format");
         }
@@ -102,6 +68,7 @@ export default function LevelDetail({ params }) {
           const textSnapshot = await uploadBytes(textRef, textFile[0]);
           const textUrl = await getDownloadURL(textSnapshot.ref);
           console.log("Text URL:", textUrl);
+          transcriptPath = textUrl;
         } else {
           console.error("Invalid text file format");
         }
@@ -110,6 +77,27 @@ export default function LevelDetail({ params }) {
       }
     } else {
       alert("Please select text file");
+    }
+    try {
+      const res = await fetch("/api/addPodcast", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: podcastName,
+          level,
+          audioPath,
+          transcriptPath,
+        }),
+      });
+
+      if (res.ok) {
+      } else {
+        console.log("Podcast registration failed.");
+      }
+    } catch (error) {
+      console.log("Error during Podcast: ", error);
     }
   };
 
