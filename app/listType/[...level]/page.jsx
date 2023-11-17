@@ -16,9 +16,40 @@ export default function LevelDetail({ params }) {
   const [textFile, setTextFile] = useState(null);
   const [audioFile, setAudioFile] = useState(null);
   const [name, setName] = useState("");
+  const [listPodcast, setListPodcast] = useState([]);
   let audioPath = "";
   let transcriptPath = "";
+  let ytbPath = "";
 
+  useEffect(() => {
+    const getListPodcast = async () => {
+      try {
+        const resListPodcast = await fetch("/api/getListPodcast", {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({ level }),
+        });
+
+        const Podcasts = await resListPodcast.json();
+
+        // Kiểm tra xem responseData có thuộc tính nào chứa mảng không
+        console.log(Podcasts);
+
+        if (Array.isArray(Podcasts)) {
+          setListPodcast(Podcasts);
+        } else {
+          console.error("Invalid data structure in the response:");
+        }
+      } catch (error) {
+        console.error("Error fetching data from MongoDB:", error);
+      }
+    };
+
+    getListPodcast();
+  }, []);
+  console.log(listPodcast);
   const handleVideoInputChange = (e) => {
     setVideoSource(e.target.value);
   };
@@ -29,7 +60,7 @@ export default function LevelDetail({ params }) {
     );
     return match && match[1];
   };
-
+  const getYouTubeId1 = (url) => {};
   const youtubeOpts = {
     width: "100%",
     playerVars: {
@@ -89,6 +120,7 @@ export default function LevelDetail({ params }) {
           level,
           audioPath,
           transcriptPath,
+          ytbPath: videoSource,
         }),
       });
 
@@ -300,27 +332,39 @@ export default function LevelDetail({ params }) {
       <h1 className="mt-16">Chi tiết khối block {level}</h1>
 
       <div className="grid grid-cols-4 gap-4">
-        {blocks.map((block) => (
+        {listPodcast.map((podcast) => (
           <div
             className="border border-gray-300 p-4 relative cursor-pointer"
-            key={block.title}
-            onClick={() => handleBlockClick(block.title)}
+            key={podcast.name}
+            onClick={() => handleBlockClick(podcast.name)}
           >
-            <h2>{block.title}</h2>
+            <h2>{podcast.name}</h2>
 
             <audio controls>
-              <source src={block.audioSource} type="audio/mpeg" />
+              <source src={podcast.audioPath} type="audio/mpeg" />
               Your browser does not support the audio element.
             </audio>
 
-            <a href={block.audioDownloadLink} download>
+            <a href={podcast.audioPath} download>
               <span className="mr-2">&#8226;</span> Tải tệp âm thanh xuống
             </a>
             <br />
-            <a href={block.textDownloadLink} download>
+            <a href={podcast.transcriptPath} download>
               <span className="mr-2">&#8226;</span> Tải tệp văn bản xuống
             </a>
-
+            <div className="relative w-full h-0 pb-[56.25%] mb-4">
+              <YouTube
+                videoId={getYouTubeId1(podcast.ytbPath)}
+                opts={{
+                  width: "100%", // Đảm bảo rằng chiều rộng của video là 100%
+                  height: "100%", // Đảm bảo chiều cao của video là 100%
+                  playerVars: {
+                    autoplay: 0, // Tắt chế độ tự động chạy video
+                  },
+                }}
+                className="absolute inset-0 w-full h-full"
+              />
+            </div>
             {/* Nút Xóa */}
             <button className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded">
               Xóa

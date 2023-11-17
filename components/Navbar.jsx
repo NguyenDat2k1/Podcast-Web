@@ -8,13 +8,13 @@ import React from "react";
 
 const Navbar = () => {
   const { data: session } = useSession();
-  console.log(session?.user?.name);
+
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   const toggleProfileMenu = () => {
     setProfileMenuOpen(!profileMenuOpen);
   };
- 
+
   return (
     <div>
       <nav className="bg-blue-400 p-4">

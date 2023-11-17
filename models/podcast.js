@@ -20,7 +20,7 @@ const podcastSchema = new Schema(
     },
     ytbPath: {
       type: String,
-      default: "test",
+      required: true,
     },
   },
   { timestamps: true }
