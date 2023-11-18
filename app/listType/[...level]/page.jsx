@@ -11,12 +11,21 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 export default function LevelDetail({ params }) {
   const { level } = params;
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+  const [selectedPodcast, setSelectedPodcast] = useState(null);
   const [podcastName, setPodcastName] = useState("");
   const [videoSource, setVideoSource] = useState("");
   const [textFile, setTextFile] = useState(null);
   const [audioFile, setAudioFile] = useState(null);
   const [name, setName] = useState("");
   const [listPodcast, setListPodcast] = useState([]);
+  const [editedPodcastName, setEditedPodcastName] = useState("");
+  const [editedLevel, setEditedLevel] = useState("");
+  const [editedVideoFile, setEditedVideoFile] = useState("");
+  const [editedAudioFile, setEditedAudioFile] = useState(null);
+  const [editedTextFile, setEditedTextFile] = useState(null);
+  const [editedVideoSource, setEditedVideoSource] = useState("");
+
   let audioPath = "";
   let transcriptPath = "";
   let ytbPath = "";
@@ -60,7 +69,12 @@ export default function LevelDetail({ params }) {
     );
     return match && match[1];
   };
-  const getYouTubeId1 = (url) => {};
+  const getYouTubeId1 = (url) => {
+    const match = url.match(
+      /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
+    return match && match[1];
+  };
   const youtubeOpts = {
     width: "100%",
     playerVars: {
@@ -142,71 +156,38 @@ export default function LevelDetail({ params }) {
   const closePopup = () => {
     setIsPopupOpen(false);
   };
+  //handle mở đóng cho button sửa
+  let editPodcast = {};
+  const openEditPopup = (podcast) => {
+    console.log("podcast edittttt: ", podcast);
+    setEditedPodcastName(podcast.name);
+    setEditedLevel(podcast.level);
+    setEditedAudioFile(podcast.audioPath);
+    setEditedTextFile(podcast.transcriptPath);
+    setEditedVideoSource(podcast.ytbPath);
+    setIsEditPopupOpen(true);
+  };
 
-  const blocks = [
-    {
-      title: "Block 1",
-      audioSource: "path-to-audio1.mp3",
-      audioDownloadLink: "path-to-audio1.mp3",
-      textDownloadLink: "path-to-text1.txt",
-    },
-    {
-      title: "Block 2",
-      audioSource: "path-to-audio2.mp3",
-      audioDownloadLink: "path-to-audio2.mp3",
-      textDownloadLink: "path-to-text2.txt",
-    },
-    {
-      title: "Block 3",
-      audioSource: "path-to-audio3.mp3",
-      audioDownloadLink: "path-to-audio3.mp3",
-      textDownloadLink: "path-to-text3.txt",
-    },
-    {
-      title: "Block 4",
-      audioSource: "path-to-audio4.mp3",
-      audioDownloadLink: "path-to-audio4.mp3",
-      textDownloadLink: "path-to-text4.txt",
-    },
-    {
-      title: "Block 5",
-      audioSource: "path-to-audio5.mp3",
-      audioDownloadLink: "path-to-audio5.mp3",
-      textDownloadLink: "path-to-text5.txt",
-    },
-    {
-      title: "Block 6",
-      audioSource: "path-to-audio6.mp3",
-      audioDownloadLink: "path-to-audio6.mp3",
-      textDownloadLink: "path-to-text6.txt",
-    },
-    {
-      title: "Block 7",
-      audioSource: "path-to-audio7.mp3",
-      audioDownloadLink: "path-to-audio7.mp3",
-      textDownloadLink: "path-to-text7.txt",
-    },
-    {
-      title: "Block 8",
-      audioSource: "path-to-audio8.mp3",
-      audioDownloadLink: "path-to-audio8.mp3",
-      textDownloadLink: "path-to-text8.txt",
-    },
-    {
-      title: "Block 9",
-      audioSource: "path-to-audio9.mp3",
-      audioDownloadLink: "path-to-audio9.mp3",
-      textDownloadLink: "path-to-text9.txt",
-    },
-    {
-      title: "Block 10",
-      audioSource: "path-to-audio10.mp3",
-      audioDownloadLink: "path-to-audio10.mp3",
-      textDownloadLink: "path-to-text10.txt",
-    },
-  ];
-  const handleBlockClick = (title) => {
-    router.push(`/detailPage/${level}/${title}`);
+  const closeEditPopup = () => {
+    setIsEditPopupOpen(false);
+  };
+  // const blocks = [
+  //   {
+  //     title: "Block 1",
+  //     audioSource: "path-to-audio1.mp3",
+  //     audioDownloadLink: "path-to-audio1.mp3",
+  //     textDownloadLink: "path-to-text1.txt",
+  //   },
+  // ];
+
+  const handleBlockClick = (event, title) => {
+    const isClickedInsideBlock =
+      event.target === event.currentTarget ||
+      event.target.tagName.toLowerCase() === "span";
+
+    if (isClickedInsideBlock) {
+      router.push(`/detailPage/${level}/${title}`);
+    }
   };
   return (
     <div>
@@ -329,6 +310,111 @@ export default function LevelDetail({ params }) {
           </div>
         </div>
       )}
+      {isEditPopupOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-4 rounded-lg">
+            <form>
+              <div className="mb-4">
+                <label
+                  htmlFor="podcastName"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Tên Podcast
+                </label>
+                <input
+                  type="text"
+                  id="podcastName"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  value={editedPodcastName}
+                  onChange={(e) => setEditedPodcastName(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label
+                  htmlFor="level"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Level Podcast
+                </label>
+                <input
+                  type="text"
+                  id="level"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  value={editedLevel}
+                  onChange={(e) => setEditedLevel(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label
+                  htmlFor="videoFile"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Video Podcast
+                </label>
+                <input
+                  type="text"
+                  id="videoFile"
+                  placeholder="Nhập đường dẫn video từ YouTube"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full mb-2"
+                  value={editedVideoSource}
+                  onChange={(e) => setEditedVideoSource(e.target.value)}
+                />
+                {editedVideoSource && (
+                  <YouTube
+                    videoId={getYouTubeId(editedVideoSource)}
+                    opts={youtubeOpts}
+                  />
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label
+                  htmlFor="audioFile"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Tệp âm thanh
+                </label>
+                <input
+                  type="file"
+                  id="audioFile"
+                  accept="audio/*"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  onChange={(e) => setEditedAudioFile(e.target.files)}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label
+                  htmlFor="textFile"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Tệp văn bản
+                </label>
+                <input
+                  type="file"
+                  id="textFile"
+                  accept=".txt"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  onChange={(e) => setEditedTextFile(e.target.files)}
+                />
+              </div>
+
+              <button
+                type="button"
+                className="bg-blue-500 text-white px-2 py-1 rounded-md"
+                onClick={handleSave}
+              >
+                Lưu
+              </button>
+              <button type="button" onClick={closeEditPopup}>
+                Đóng
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
       <h1 className="mt-16">Chi tiết khối block {level}</h1>
 
       <div className="grid grid-cols-4 gap-4">
@@ -336,7 +422,8 @@ export default function LevelDetail({ params }) {
           <div
             className="border border-gray-300 p-4 relative cursor-pointer"
             key={podcast.name}
-            onClick={() => handleBlockClick(podcast.name)}
+            // onClick={() => handleBlockClick(podcast.name)}
+            onClick={(event) => handleBlockClick(event, podcast.name)}
           >
             <h2>{podcast.name}</h2>
 
@@ -371,7 +458,10 @@ export default function LevelDetail({ params }) {
             </button>
 
             {/* Nút Sửa */}
-            <button className="absolute top-0 right-8 bg-green-500 text-white p-1 rounded">
+            <button
+              className="absolute top-0 right-8 bg-green-500 text-white p-1 rounded"
+              onClick={() => openEditPopup(podcast)}
+            >
               Sửa
             </button>
           </div>
