@@ -6,7 +6,13 @@ import Navbar from "@/components/Navbar";
 import { redirect, useRouter } from "next/navigation";
 import YouTube from "react-youtube";
 import { analytics } from "@/components/Firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  getStorage,
+  deleteObject,
+} from "firebase/storage";
 
 export default function LevelDetail({ params }) {
   const { level } = params;
@@ -25,7 +31,9 @@ export default function LevelDetail({ params }) {
   const [editedAudioFile, setEditedAudioFile] = useState(null);
   const [editedTextFile, setEditedTextFile] = useState(null);
   const [editedVideoSource, setEditedVideoSource] = useState("");
-
+  const [idPodcast, setIDPodcast] = useState("");
+  const [tempName, setTempName] = useState("");
+  const [updateFlag, setUpdateFlag] = useState(false);
   let audioPath = "";
   let transcriptPath = "";
   let ytbPath = "";
@@ -57,7 +65,7 @@ export default function LevelDetail({ params }) {
     };
 
     getListPodcast();
-  }, []);
+  }, [updateFlag]);
   console.log(listPodcast);
   const handleVideoInputChange = (e) => {
     setVideoSource(e.target.value);
@@ -139,6 +147,7 @@ export default function LevelDetail({ params }) {
       });
 
       if (res.ok) {
+        setUpdateFlag((prev) => !prev);
       } else {
         console.log("Podcast registration failed.");
       }
@@ -146,7 +155,89 @@ export default function LevelDetail({ params }) {
       console.log("Error during Podcast: ", error);
     }
   };
+  const storage = getStorage();
+  const handleUpdate = async () => {
+    try {
+      console.log("updating fileeeee");
+      if (tempName != editedPodcastName) {
+        const deleteExistingFiles = async () => {
+          try {
+            // Xóa tệp âm thanh
+            const audioDeleteRef = ref(storage, `${level}/${tempName}`);
+            await deleteObject(audioDeleteRef);
+            console.log("Đã xóa tệp âm thanh cũ.");
 
+            // Xóa tệp văn bản
+            const textDeleteRef = ref(
+              storage,
+              `Transcripts/${level}-${tempName}`
+            );
+            await deleteObject(textDeleteRef);
+            console.log("Đã xóa tệp văn bản cũ.");
+          } catch (deleteError) {
+            console.error("Lỗi khi xóa các tệp đã tồn tại:", deleteError);
+          }
+        };
+        await deleteExistingFiles();
+      }
+
+      // Gọi hàm để xóa các tệp đã tồn tại
+
+      if (editedAudioFile && editedAudioFile.includes("http")) {
+        alert("Vui lòng chọn cả tệp âm thanh và văn bản");
+        return;
+      }
+      if (editedTextFile && editedTextFile.includes("http")) {
+        alert("Vui lòng chọn cả tệp âm thanh và văn bản");
+        return;
+      }
+      try {
+        // Xử lý tệp âm thanh
+        const audioRef = ref(storage, `${level}/${editedPodcastName}`);
+        const audioSnapshot = await uploadBytes(audioRef, editedAudioFile[0]);
+        const audioUrl = await getDownloadURL(audioSnapshot.ref);
+        console.log("URL Tệp âm thanh:", audioUrl);
+        const audioPath = audioUrl;
+
+        // Xử lý tệp văn bản
+        const textRef = ref(
+          storage,
+          `Transcripts/${level}-${editedPodcastName}`
+        );
+        const textSnapshot = await uploadBytes(textRef, editedTextFile[0]);
+        const textUrl = await getDownloadURL(textSnapshot.ref);
+        console.log("URL Tệp văn bản:", textUrl);
+        const transcriptPath = textUrl;
+
+        // Thực hiện cuộc gọi API để cập nhật podcast
+        const res = await fetch("/api/updatePodcast", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            podcastID: idPodcast,
+            name: editedPodcastName,
+            level,
+            audioPath,
+            transcriptPath,
+            ytbPath: editedVideoSource,
+          }),
+        });
+
+        if (res.ok) {
+          setUpdateFlag((prev) => !prev);
+          console.log("Cập nhật podcast thành công.");
+        } else {
+          console.log("Cập nhật podcast thất bại.");
+        }
+      } catch (error) {
+        console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
+      }
+    } catch (error) {
+      console.error("Lỗi trong handleUpdate:", error);
+    }
+  };
   const router = useRouter();
 
   const openPopup = () => {
@@ -157,9 +248,11 @@ export default function LevelDetail({ params }) {
     setIsPopupOpen(false);
   };
   //handle mở đóng cho button sửa
-  let editPodcast = {};
+
   const openEditPopup = (podcast) => {
+    setIDPodcast(podcast._id);
     console.log("podcast edittttt: ", podcast);
+    setTempName(podcast.name);
     setEditedPodcastName(podcast.name);
     setEditedLevel(podcast.level);
     setEditedAudioFile(podcast.audioPath);
@@ -171,14 +264,6 @@ export default function LevelDetail({ params }) {
   const closeEditPopup = () => {
     setIsEditPopupOpen(false);
   };
-  // const blocks = [
-  //   {
-  //     title: "Block 1",
-  //     audioSource: "path-to-audio1.mp3",
-  //     audioDownloadLink: "path-to-audio1.mp3",
-  //     textDownloadLink: "path-to-text1.txt",
-  //   },
-  // ];
 
   const handleBlockClick = (event, title) => {
     const isClickedInsideBlock =
@@ -187,6 +272,62 @@ export default function LevelDetail({ params }) {
 
     if (isClickedInsideBlock) {
       router.push(`/detailPage/${level}/${title}`);
+    }
+  };
+
+  //deleteHandle
+  const handleDeleteClick = async (podcast) => {
+    const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa không?");
+
+    if (isConfirmed) {
+      try {
+        console.log("delete fileeeee is coming");
+
+        const deleteExistingFiles = async () => {
+          try {
+            // Xóa tệp âm thanh
+            const audioDeleteRef = ref(storage, `${level}/${podcast.name}`);
+            await deleteObject(audioDeleteRef);
+            console.log("Đã xóa tệp âm thanh cũ.");
+
+            // Xóa tệp văn bản
+            const textDeleteRef = ref(
+              storage,
+              `Transcripts/${level}-${podcast.name}`
+            );
+            await deleteObject(textDeleteRef);
+            console.log("Đã xóa tệp văn bản cũ.");
+          } catch (deleteError) {
+            console.error("Lỗi khi xóa các tệp đã tồn tại:", deleteError);
+          }
+        };
+
+        // Gọi hàm để xóa các tệp đã tồn tại
+        await deleteExistingFiles();
+
+        try {
+          const res = await fetch("/api/deletePodcast", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              podcastID: podcast._id,
+            }),
+          });
+
+          if (res.ok) {
+            setUpdateFlag((prev) => !prev);
+            console.log("XÓA podcast thành công.");
+          } else {
+            console.log("XÓA podcast thất bại.");
+          }
+        } catch (error) {
+          console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
+        }
+      } catch (error) {
+        console.error("XÓA trong handleUpdate:", error);
+      }
     }
   };
   return (
@@ -239,6 +380,8 @@ export default function LevelDetail({ params }) {
                   type="text"
                   id="level"
                   className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  readOnly
+                  value={level}
                 />
               </div>
 
@@ -341,6 +484,7 @@ export default function LevelDetail({ params }) {
                   type="text"
                   id="level"
                   className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  readOnly
                   value={editedLevel}
                   onChange={(e) => setEditedLevel(e.target.value)}
                 />
@@ -404,7 +548,7 @@ export default function LevelDetail({ params }) {
               <button
                 type="button"
                 className="bg-blue-500 text-white px-2 py-1 rounded-md"
-                onClick={handleSave}
+                onClick={handleUpdate}
               >
                 Lưu
               </button>
@@ -443,8 +587,8 @@ export default function LevelDetail({ params }) {
               <YouTube
                 videoId={getYouTubeId1(podcast.ytbPath)}
                 opts={{
-                  width: "100%", // Đảm bảo rằng chiều rộng của video là 100%
-                  height: "100%", // Đảm bảo chiều cao của video là 100%
+                  width: "100%",
+                  height: "100%",
                   playerVars: {
                     autoplay: 0, // Tắt chế độ tự động chạy video
                   },
@@ -452,12 +596,14 @@ export default function LevelDetail({ params }) {
                 className="absolute inset-0 w-full h-full"
               />
             </div>
-            {/* Nút Xóa */}
-            <button className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded">
+
+            <button
+              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded"
+              onClick={() => handleDeleteClick(podcast)}
+            >
               Xóa
             </button>
 
-            {/* Nút Sửa */}
             <button
               className="absolute top-0 right-8 bg-green-500 text-white p-1 rounded"
               onClick={() => openEditPopup(podcast)}
