@@ -12,6 +12,7 @@ import {
   getDownloadURL,
   getStorage,
   deleteObject,
+  updateMetadata,
 } from "firebase/storage";
 
 export default function LevelDetail({ params }) {
@@ -159,56 +160,138 @@ export default function LevelDetail({ params }) {
   const handleUpdate = async () => {
     try {
       console.log("updating fileeeee");
-      if (tempName != editedPodcastName) {
-        const deleteExistingFiles = async () => {
-          try {
-            // Xóa tệp âm thanh
-            const audioDeleteRef = ref(storage, `${level}/${tempName}`);
-            await deleteObject(audioDeleteRef);
-            console.log("Đã xóa tệp âm thanh cũ.");
 
-            // Xóa tệp văn bản
-            const textDeleteRef = ref(
-              storage,
-              `Transcripts/${level}-${tempName}`
-            );
-            await deleteObject(textDeleteRef);
-            console.log("Đã xóa tệp văn bản cũ.");
-          } catch (deleteError) {
-            console.error("Lỗi khi xóa các tệp đã tồn tại:", deleteError);
-          }
-        };
-        await deleteExistingFiles();
-      }
+      const deleteExistingFiles = async () => {
+        try {
+          // Xóa tệp âm thanh
+          const audioDeleteRef = ref(storage, `${level}/${tempName}`);
+          await deleteObject(audioDeleteRef);
+          console.log("Đã xóa tệp âm thanh cũ.");
+
+          // Xóa tệp văn bản
+          const textDeleteRef = ref(
+            storage,
+            `Transcripts/${level}-${tempName}`
+          );
+          await deleteObject(textDeleteRef);
+          console.log("Đã xóa tệp văn bản cũ.");
+        } catch (deleteError) {
+          console.error("Lỗi khi xóa các tệp đã tồn tại:", deleteError);
+        }
+      };
+      await deleteExistingFiles();
 
       // Gọi hàm để xóa các tệp đã tồn tại
 
-      if (editedAudioFile && editedAudioFile.includes("http")) {
-        alert("Vui lòng chọn cả tệp âm thanh và văn bản");
-        return;
-      }
-      if (editedTextFile && editedTextFile.includes("http")) {
-        alert("Vui lòng chọn cả tệp âm thanh và văn bản");
-        return;
-      }
       try {
-        // Xử lý tệp âm thanh
-        const audioRef = ref(storage, `${level}/${editedPodcastName}`);
-        const audioSnapshot = await uploadBytes(audioRef, editedAudioFile[0]);
-        const audioUrl = await getDownloadURL(audioSnapshot.ref);
-        console.log("URL Tệp âm thanh:", audioUrl);
-        const audioPath = audioUrl;
+        let audioPath = "";
+        let transcriptPath = "";
+        switch (true) {
+          case !editedTextFile &&
+            !editedTextFile.includes("http") &&
+            editedAudioFile &&
+            editedAudioFile.includes("http"):
+            // Thực hiện case 1: chỉ cập nhật metadata cho tệp âm thanh
+            const audioMetadataRef = ref(
+              storage,
+              `${level}/${editedPodcastName}`
+            );
+            await updateMetadata(audioMetadataRef, { name: editedPodcastName });
 
-        // Xử lý tệp văn bản
-        const textRef = ref(
-          storage,
-          `Transcripts/${level}-${editedPodcastName}`
-        );
-        const textSnapshot = await uploadBytes(textRef, editedTextFile[0]);
-        const textUrl = await getDownloadURL(textSnapshot.ref);
-        console.log("URL Tệp văn bản:", textUrl);
-        const transcriptPath = textUrl;
+            // Lấy URL mới của tệp âm thanh
+            const updatedAudioUrl = await getDownloadURL(audioMetadataRef);
+            console.log("URL mới của tệp âm thanh:", updatedAudioUrl);
 
+            const text1Ref = ref(
+              storage,
+              `Transcripts/${level}-${editedPodcastName}`
+            );
+            const text1Snapshot = await uploadBytes(
+              text1Ref,
+              editedTextFile[0]
+            );
+            const text1Url = await getDownloadURL(text1Snapshot.ref);
+            console.log("URL Tệp văn bản:", text1Url);
+            transcriptPath = text1Url;
+
+            break;
+
+          case !editedAudioFile &&
+            !editedAudioFile.includes("http") &&
+            editedTextFile &&
+            editedTextFile.includes("http"):
+            // Thực hiện case 2: chỉ cập nhật metadata cho tệp văn bản
+            const textMetadataRef = ref(
+              storage,
+              `Transcripts/${level}-${editedPodcastName}`
+            );
+            await updateMetadata(textMetadataRef, { name: editedPodcastName });
+
+            // Lấy URL mới của tệp văn bản
+            const updatedTextUrl = await getDownloadURL(textMetadataRef);
+            console.log("URL mới của tệp văn bản:", updatedTextUrl);
+            const audio1Ref = ref(storage, `${level}/${editedPodcastName}`);
+            const audio1Snapshot = await uploadBytes(
+              audio1Ref,
+              editedAudioFile[0]
+            );
+            const audio1Url = await getDownloadURL(audio1Snapshot.ref);
+            console.log("URL Tệp âm thanh:", audio1Url);
+            audioPath = audio1Url;
+            break;
+
+          case !editedAudioFile &&
+            !editedAudioFile.includes("http") &&
+            !editedTextFile &&
+            !editedTextFile.includes("http"):
+            //Xử lý tệp âm thanh
+            const nameAudioMetadata = ref(
+              storage,
+              `${level}/${editedPodcastName}`
+            );
+            await updateMetadata(nameAudioMetadata, {
+              name: editedPodcastName,
+            });
+
+            // Lấy URL mới của tệp văn bản
+            const newAudioUrl = await getDownloadURL(nameAudioMetadata);
+            console.log("URL mới của tệp audio:", newAudioUrl);
+            audioPath = newAudioUrl;
+
+            // Xử lý tệp văn bản
+            const nameTextMetadata = ref(
+              storage,
+              `Transcripts/${level}-${editedPodcastName}`
+            );
+            await updateMetadata(nameTextMetadata, {
+              name: `${level}-${editedPodcastName}`,
+            });
+
+            // Lấy URL mới của tệp văn bản
+            const NewTextUrl = await getDownloadURL(nameTextMetadata);
+            console.log("URL mới của tệp văn bản:", NewTextUrl);
+            transcriptPath = NewTextUrl;
+            console.log("log o day :", newAudioUrl, NewTextUrl);
+            break;
+          default:
+            const audioRef = ref(storage, `${level}/${editedPodcastName}`);
+            const audioSnapshot = await uploadBytes(
+              audioRef,
+              editedAudioFile[0]
+            );
+            const audioUrl = await getDownloadURL(audioSnapshot.ref);
+            console.log("URL Tệp âm thanh:", audioUrl);
+            audioPath = audioUrl;
+            const textRef = ref(
+              storage,
+              `Transcripts/${level}-${editedPodcastName}`
+            );
+            const textSnapshot = await uploadBytes(textRef, editedTextFile[0]);
+            const textUrl = await getDownloadURL(textSnapshot.ref);
+            console.log("URL Tệp văn bản:", textUrl);
+            transcriptPath = textUrl;
+            break;
+        }
         // Thực hiện cuộc gọi API để cập nhật podcast
         const res = await fetch("/api/updatePodcast", {
           method: "PUT",
@@ -226,6 +309,7 @@ export default function LevelDetail({ params }) {
         });
 
         if (res.ok) {
+          setTempName(editedPodcastName);
           setUpdateFlag((prev) => !prev);
           console.log("Cập nhật podcast thành công.");
         } else {
@@ -249,15 +333,15 @@ export default function LevelDetail({ params }) {
   };
   //handle mở đóng cho button sửa
 
-  const openEditPopup = (podcast) => {
+  const openEditPopup = async (podcast) => {
     setIDPodcast(podcast._id);
     console.log("podcast edittttt: ", podcast);
     setTempName(podcast.name);
     setEditedPodcastName(podcast.name);
     setEditedLevel(podcast.level);
+    setEditedVideoSource(podcast.ytbPath);
     setEditedAudioFile(podcast.audioPath);
     setEditedTextFile(podcast.transcriptPath);
-    setEditedVideoSource(podcast.ytbPath);
     setIsEditPopupOpen(true);
   };
 
@@ -380,7 +464,6 @@ export default function LevelDetail({ params }) {
                   type="text"
                   id="level"
                   className="border border-gray-400 px-2 py-1 rounded-md w-full"
-                  readOnly
                   value={level}
                 />
               </div>
