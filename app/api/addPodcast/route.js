@@ -4,22 +4,26 @@ import { connectMongoDB } from "@/lib/mongodb";
 
 export async function POST(req) {
   try {
-    const { name, level, audioPath, transcriptPath, ytbPath } =
+    const { name, level, type, audioPath, transcriptPath, describe, ytbPath } =
       await req.json();
     const levelValue = (await Array.isArray(level)) ? level[0] : level;
     console.log("Received podcast data:", {
       name,
       level,
+      type,
       audioPath,
       transcriptPath,
+      describe,
       ytbPath,
     });
     await connectMongoDB();
     await Podcast.create({
       name,
       level: levelValue,
+      type,
       audioPath,
       transcriptPath,
+      describe,
       ytbPath,
     });
 

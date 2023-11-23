@@ -1,12 +1,41 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/Navbar";
+import YouTube from "react-youtube";
 
 export default function DetailPage({ params }) {
   const { data: session } = useSession();
+  const [detailPodcast, setDetailPodcast] = useState({});
+  const { detail } = params;
+  const id = detail[2];
+  console.log(detail);
 
+  useEffect(() => {
+    const getDetailPodcast = async () => {
+      try {
+        const resListPodcast = await fetch("/api/getDetailPodcast", {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({ id }),
+        });
+
+        const podcast = await resListPodcast.json();
+        await setDetailPodcast(podcast);
+        console.log("here:", podcast);
+
+        console.log("DetailPodcast: ", detailPodcast);
+      } catch (error) {
+        console.error("Error fetching data from MongoDB:", error);
+      }
+    };
+
+    getDetailPodcast();
+  }, [params]);
   const blocks = [
     {
       title: "Block 1",
@@ -27,27 +56,32 @@ export default function DetailPage({ params }) {
       textDownloadLink: "text-download-3.txt",
     },
   ];
-
+  console.log("audio path:", detailPodcast.audioPath);
   return (
     <div>
       <Navbar />
-      <div className="flex justify-center items-center h-screen mt-40 ">
+
+      <div className="flex justify-center items-center h-screen mt-40">
         <div
-          className="text-center mx-auto border border-gray-300 mx-4"
+          className="max-w-screen-md w-full text-center mx-auto border border-gray-300 p-4"
           style={{ marginLeft: "400px", marginRight: "400px" }}
         >
           <h1>{params.detail[1]}</h1>
           <div className="flex flex-col items-center">
             <audio controls className="mb-4">
-              <source src="audio-source.mp3" type="audio/mpeg" />
+              {console.log(typeof detailPodcast.audioPath)}
+              {detailPodcast?.audioPath ? (
+                <source src={detailPodcast.audioPath} type="audio/mpeg" />
+              ) : null}
               Your browser does not support the audio element.
             </audio>
+
             <div>
-              <a href="audio-download-1.mp3" download className="block mb-2">
-                <span className="mr-2">&#8226;</span> Tải tệp âm thanh xuống
+              <a href={detailPodcast.audioPath} download className="block mb-2">
+                <span className="mr-2">&#8226;</span> Download Audio
               </a>
-              <a href="text-download-1.txt" download className="block">
-                <span className="mr-2">&#8226;</span> Tải tệp văn bản xuống
+              <a href={detailPodcast.transcriptPath} download className="block">
+                <span className="mr-2">&#8226;</span> Download Script
               </a>
             </div>
           </div>

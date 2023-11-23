@@ -4,16 +4,26 @@ import { connectMongoDB } from "@/lib/mongodb";
 
 export async function PUT(req) {
   try {
-    const { podcastID, name, level, audioPath, transcriptPath, ytbPath } =
-      await req.json();
+    const {
+      podcastID,
+      name,
+      level,
+      type,
+      audioPath,
+      transcriptPath,
+      describe,
+      ytbPath,
+    } = await req.json();
     const levelValue = Array.isArray(level) ? level[0] : level;
 
     console.log("Received updated podcast data:", {
       podcastID,
       name,
       level,
+      type,
       audioPath,
       transcriptPath,
+      describe,
       ytbPath,
     });
 
@@ -24,8 +34,10 @@ export async function PUT(req) {
       $set: {
         name,
         level: levelValue,
+        type,
         audioPath,
         transcriptPath,
+        describe,
         ytbPath,
       },
     };

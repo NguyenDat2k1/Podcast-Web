@@ -10,6 +10,10 @@ const podcastSchema = new Schema(
       type: String,
       required: true,
     },
+    type: {
+      type: String,
+      required: true,
+    },
     audioPath: {
       type: String,
       required: true,
@@ -17,6 +21,10 @@ const podcastSchema = new Schema(
     transcriptPath: {
       type: String,
       required: true,
+    },
+    describe: {
+      type: String,
+      default: "Haven't describe yet",
     },
     ytbPath: {
       type: String,

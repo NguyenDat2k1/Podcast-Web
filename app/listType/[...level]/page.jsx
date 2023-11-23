@@ -20,6 +20,7 @@ export default function LevelDetail({ params }) {
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const [selectedPodcast, setSelectedPodcast] = useState(null);
   const [podcastName, setPodcastName] = useState("");
+  const [describe, setDescribe] = useState("");
   const [videoSource, setVideoSource] = useState("");
   const [textFile, setTextFile] = useState(null);
   const [audioFile, setAudioFile] = useState(null);
@@ -31,9 +32,13 @@ export default function LevelDetail({ params }) {
   const [editedAudioFile, setEditedAudioFile] = useState(null);
   const [editedTextFile, setEditedTextFile] = useState(null);
   const [editedVideoSource, setEditedVideoSource] = useState("");
+  const [editedType, setEditedType] = useState("");
+  const [editedDescribe, setEditedDescribe] = useState("");
   const [idPodcast, setIDPodcast] = useState("");
   const [tempName, setTempName] = useState("");
   const [updateFlag, setUpdateFlag] = useState(false);
+  const [type, setType] = useState("Business");
+
   let audioPath = "";
   let transcriptPath = "";
   let ytbPath = "";
@@ -66,7 +71,11 @@ export default function LevelDetail({ params }) {
 
     getListPodcast();
   }, [updateFlag]);
-  console.log(listPodcast);
+
+  const handleTypeChange = (event) => {
+    // Cập nhật giá trị khi người dùng chọn
+    setType(event.target.value);
+  };
   const handleVideoInputChange = (e) => {
     setVideoSource(e.target.value);
   };
@@ -85,6 +94,7 @@ export default function LevelDetail({ params }) {
   };
   const youtubeOpts = {
     width: "100%",
+    height: "90%",
     playerVars: {
       autoplay: 1,
     },
@@ -140,8 +150,10 @@ export default function LevelDetail({ params }) {
         body: JSON.stringify({
           name: podcastName,
           level,
+          type,
           audioPath,
           transcriptPath,
+          describe: describe,
           ytbPath: videoSource,
         }),
       });
@@ -233,23 +245,9 @@ export default function LevelDetail({ params }) {
             console.log("case 3");
             console.log("audio :", editedAudioFile.length);
             console.log("script :", editedTextFile.length);
-            //Xử lý tệp âm thanh
-            // await deleteExistingAudioFiles();
-            // const audioCase3 = ref(storage, `${level}/${editedPodcastName}`);
-            // const audioCase3Snapshot = await uploadBytes(audioCase3, audioBlob);
-            // const audioCase3Url = await getDownloadURL(audioCase3Snapshot.ref);
-            // console.log("URL Tệp âm thanh:", audioCase3Url);
+
             audioPath = editedAudioFile;
 
-            // // Xử lý tệp văn bản
-            // await deleteExistingScriptFiles();
-            // const textCase3Ref = ref(
-            //   storage,
-            //   `Transcripts/${level}-${editedPodcastName}`
-            // );
-            // const textCase3Snapshot = await uploadBytes(textCase3Ref, textBlob);
-            // const textCase3Url = await getDownloadURL(textCase3Snapshot.ref);
-            // console.log("URL Tệp văn bản:", textCase3Url);
             transcriptPath = editedTextFile;
 
             break;
@@ -296,8 +294,10 @@ export default function LevelDetail({ params }) {
             podcastID: idPodcast,
             name: editedPodcastName,
             level,
+            type: editedType,
             audioPath,
             transcriptPath,
+            describe: editedDescribe,
             ytbPath: editedVideoSource,
           }),
         });
@@ -340,6 +340,8 @@ export default function LevelDetail({ params }) {
     setEditedVideoSource(podcast.ytbPath);
     setEditedAudioFile(podcast.audioPath);
     setEditedTextFile(podcast.transcriptPath);
+    setEditedType(podcast.type);
+    setEditedDescribe(podcast.describe);
     setIsEditPopupOpen(true);
   };
 
@@ -347,13 +349,13 @@ export default function LevelDetail({ params }) {
     setIsEditPopupOpen(false);
   };
 
-  const handleBlockClick = (event, title) => {
+  const handleBlockClick = (event, title, id) => {
     const isClickedInsideBlock =
       event.target === event.currentTarget ||
       event.target.tagName.toLowerCase() === "span";
 
     if (isClickedInsideBlock) {
-      router.push(`/detailPage/${level}/${title}`);
+      router.push(`/detailPage/${level}/${title}/${id}`);
     }
   };
 
@@ -465,7 +467,24 @@ export default function LevelDetail({ params }) {
                   value={level}
                 />
               </div>
-
+              <div className="mb-4">
+                <label
+                  htmlFor="level"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Type
+                </label>
+                <select
+                  id="level"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  value={type}
+                  onChange={handleTypeChange}
+                >
+                  <option value="Business">Business</option>
+                  <option value="Comedy">Comedy</option>
+                  <option value="Detective">Detective</option>
+                </select>
+              </div>
               <div className="mb-4">
                 <label
                   htmlFor="videoFile"
@@ -487,7 +506,21 @@ export default function LevelDetail({ params }) {
                   />
                 )}
               </div>
-
+              <div className="mb-4">
+                <label
+                  htmlFor="podcastName"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Describe
+                </label>
+                <input
+                  type="text"
+                  id="podcastName"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  value={describe}
+                  onChange={(e) => setDescribe(e.target.value)}
+                />
+              </div>
               <div className="mb-4">
                 <label
                   htmlFor="audioFile"
@@ -570,7 +603,24 @@ export default function LevelDetail({ params }) {
                   onChange={(e) => setEditedLevel(e.target.value)}
                 />
               </div>
-
+              <div className="mb-4">
+                <label
+                  htmlFor="level"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Type
+                </label>
+                <select
+                  id="level"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  value={editedType}
+                  onChange={(e) => setEditedType(e.target.value)}
+                >
+                  <option value="Business">Business</option>
+                  <option value="Comedy">Comedy</option>
+                  <option value="Detective">Detective</option>
+                </select>
+              </div>
               <div className="mb-4">
                 <label
                   htmlFor="videoFile"
@@ -593,7 +643,21 @@ export default function LevelDetail({ params }) {
                   />
                 )}
               </div>
-
+              <div className="mb-4">
+                <label
+                  htmlFor="podcastName"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Describe
+                </label>
+                <input
+                  type="text"
+                  id="podcastName"
+                  className="border border-gray-400 px-2 py-1 rounded-md w-full"
+                  value={editedDescribe}
+                  onChange={(e) => setEditedDescribe(e.target.value)}
+                />
+              </div>
               <div className="mb-4">
                 <label
                   htmlFor="audioFile"
@@ -647,8 +711,9 @@ export default function LevelDetail({ params }) {
           <div
             className="border border-gray-300 p-4 relative cursor-pointer"
             key={podcast.name}
-            // onClick={() => handleBlockClick(podcast.name)}
-            onClick={(event) => handleBlockClick(event, podcast.name)}
+            onClick={(event) =>
+              handleBlockClick(event, podcast.name, podcast._id)
+            }
           >
             <h2>{podcast.name}</h2>
 
@@ -658,11 +723,11 @@ export default function LevelDetail({ params }) {
             </audio>
 
             <a href={podcast.audioPath} download>
-              <span className="mr-2">&#8226;</span> Tải tệp âm thanh xuống
+              <span className="mr-2">&#8226;</span> Download Audio
             </a>
             <br />
             <a href={podcast.transcriptPath} download>
-              <span className="mr-2">&#8226;</span> Tải tệp văn bản xuống
+              <span className="mr-2">&#8226;</span> Download Script
             </a>
             <div className="relative w-full h-0 pb-[56.25%] mb-4">
               <YouTube
@@ -679,17 +744,17 @@ export default function LevelDetail({ params }) {
             </div>
 
             <button
-              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded"
+              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded text-sm truncate"
               onClick={() => handleDeleteClick(podcast)}
             >
-              Xóa
+              Delete
             </button>
 
             <button
-              className="absolute top-0 right-8 bg-green-500 text-white p-1 rounded"
+              className="absolute top-0 right-[50px] bg-green-500 text-white p-1 rounded text-sm truncate"
               onClick={() => openEditPopup(podcast)}
             >
-              Sửa
+              Update
             </button>
           </div>
         ))}
