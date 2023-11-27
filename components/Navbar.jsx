@@ -43,6 +43,22 @@ const Navbar = () => {
           </div>
           <ul className="flex space-x-4">
             <li className="relative">
+              <Link href="/favouriteList">
+                <button className="text-white border border-blue-400 rounded px-2 py-1 mr-2">
+                  Favourite List
+                </button>
+              </Link>
+            </li>
+            <li className="relative">
+              {session?.user?.name === "Admin" && (
+                <Link href="/listType">
+                  <button className="text-white border border-blue-400 rounded px-2 py-1 mr-2">
+                    Thống Kê
+                  </button>
+                </Link>
+              )}
+            </li>
+            <li className="relative">
               {session?.user?.name === "Admin" && (
                 <Link href="/listType">
                   <button className="text-white border border-blue-400 rounded px-2 py-1 mr-2">

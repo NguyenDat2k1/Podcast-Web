@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import Navbar from "@/components/Navbar";
 import { redirect, useRouter } from "next/navigation";
 import YouTube from "react-youtube";
@@ -16,6 +17,7 @@ import {
 
 export default function LevelDetail({ params }) {
   const { level } = params;
+  const { data: session } = useSession();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const [selectedPodcast, setSelectedPodcast] = useState(null);
@@ -38,11 +40,15 @@ export default function LevelDetail({ params }) {
   const [tempName, setTempName] = useState("");
   const [updateFlag, setUpdateFlag] = useState(false);
   const [type, setType] = useState("Business");
-
+  const [user_ID, setUserID] = useState("");
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favoriteStates, setFavoriteStates] = useState(
+    listPodcast.map(() => false)
+  );
   let audioPath = "";
   let transcriptPath = "";
   let ytbPath = "";
-
+  let email = session?.user?.email;
   useEffect(() => {
     const getListPodcast = async () => {
       try {
@@ -87,6 +93,7 @@ export default function LevelDetail({ params }) {
     return match && match[1];
   };
   const getYouTubeId1 = (url) => {
+    console.log("url is here", url);
     const match = url.match(
       /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
     );
@@ -412,6 +419,52 @@ export default function LevelDetail({ params }) {
       } catch (error) {
         console.error("XÓA trong handleUpdate:", error);
       }
+    }
+  };
+
+  const handleFavoriteClick = async (podcast, index) => {
+    try {
+      console.log("đang thả tym");
+
+      try {
+        // call API để cập nhật podcast
+        const resUserExists = await fetch("api/userExists", {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
+        const { user } = await resUserExists.json();
+        if (user) {
+          console.log("đã lấy được user");
+          setUserID(user._id);
+        }
+        const res = await fetch("/api/updateLike", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            podcastID: podcast._id,
+            userID: user_ID,
+          }),
+        });
+
+        if (res.ok) {
+          // setIsFavorited(true);
+          setFavoriteStates((prev) =>
+            prev.map((state, i) => (i === index ? !state : state))
+          );
+          console.log("thả tym podcast thành công.");
+        } else {
+          console.log("thả tym podcast thất bại.");
+        }
+      } catch (error) {
+        console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
+      }
+    } catch (error) {
+      console.error("Lỗi trong handlefavourite:", error);
     }
   };
   return (
@@ -742,7 +795,12 @@ export default function LevelDetail({ params }) {
                 className="absolute inset-0 w-full h-full"
               />
             </div>
-
+            <button
+              className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded text-sm truncate"
+              onClick={() => handleFavoriteClick(podcast)}
+            >
+              Favourite
+            </button>
             <button
               className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded text-sm truncate"
               onClick={() => handleDeleteClick(podcast)}

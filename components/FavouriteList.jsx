@@ -1,28 +1,22 @@
 "use client";
 
-import Link from "next/link";
-import { signOut } from "next-auth/react";
-import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import Navbar from "./Navbar";
-import YouTube from "react-youtube";
+import Link from "next/link";
+import Navbar from "@/components/Navbar";
 import { redirect, useRouter } from "next/navigation";
+import YouTube from "react-youtube";
+import { useSession } from "next-auth/react";
 
-export default function UserInfo() {
+export default function FavouriteList() {
   const { data: session } = useSession();
+  const [listPodcast, setListPodcast] = useState([]);
   const [updateFlag, setUpdateFlag] = useState(false);
   const [user_ID, setUser_ID] = useState("");
-  const [listPodcast, setListPodcast] = useState([]);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const router = useRouter();
   let email = session?.user?.email;
-  const getYouTubeId1 = (url) => {
-    console.log("url is here", url);
-    const match = url.match(
-      /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-    );
-    return match && match[1];
-  };
+  let audioPath = "";
+  let transcriptPath = "";
+  let ytbPath = "";
+
   useEffect(() => {
     const getListPodcast = async () => {
       try {
@@ -43,12 +37,11 @@ export default function UserInfo() {
         console.log(podcasts);
 
         if (Array.isArray(podcasts)) {
-          const notLikedPodcasts = podcasts.filter(
-            (podcast) =>
-              !favourites.some((fav) => fav.podcast_ID === podcast._id)
+          const likedPodcasts = podcasts.filter((podcast) =>
+            favourites.some((fav) => fav.podcast_ID === podcast._id)
           );
 
-          setListPodcast(notLikedPodcasts);
+          setListPodcast(likedPodcasts);
         } else {
           console.error("Invalid data structure in the response:");
         }
@@ -60,6 +53,16 @@ export default function UserInfo() {
     getListPodcast();
   }, [updateFlag]);
 
+  const getYouTubeId1 = (url) => {
+    console.log("url is here", url);
+    const match = url.match(
+      /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
+    return match && match[1];
+  };
+
+  const router = useRouter();
+
   const handleBlockClick = (event, title, id, level) => {
     const isClickedInsideBlock =
       event.target === event.currentTarget ||
@@ -69,12 +72,10 @@ export default function UserInfo() {
       router.push(`/detailPage/${level}/${title}/${id}`);
     }
   };
-  const toggleProfileMenu = () => {
-    setProfileMenuOpen(!profileMenuOpen);
-  };
+
   const handleFavoriteClick = async (podcast) => {
     try {
-      console.log("đang thả tym");
+      console.log("đang xóa tym");
       console.log("email fetching: ", email);
       try {
         // Gọi API để kiểm tra user và lấy userID
@@ -92,14 +93,14 @@ export default function UserInfo() {
         }
         console.log("đã lấy được user:", podcast._id, user_ID);
         // Gọi API để cập nhật thích podcast
-        const res = await fetch("/api/updateLike", {
-          method: "POST",
+        const res = await fetch("/api/updateUnlike", {
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            podcast_ID: podcast._id,
-            user_ID: user_ID,
+            podcastID: podcast._id,
+            userID: user_ID,
           }),
         });
 
@@ -113,26 +114,20 @@ export default function UserInfo() {
           //   prev.map((state, i) => (i === index ? !state : state))
           // );
 
-          console.log("thả tym podcast thành công.");
+          console.log("XÓa tym podcast thành công.");
         } else {
-          console.log("thả tym podcast thất bại.");
+          console.log("Xóa tym podcast thất bại.");
         }
       } catch (error) {
-        console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
+        console.error("Lỗi khi xử lý Xóa tym:", error);
       }
     } catch (error) {
       console.error("Lỗi trong handlefavourite:", error);
     }
   };
-
   return (
     <div>
       <Navbar />
-
-      <div className="bg-gray-300 p-4 text-center h-96">
-        Đây là banner của bạn. Bạn có thể tùy chỉnh nội dung và kiểu dáng của
-        banner tại đây.
-      </div>
 
       <div className="grid grid-cols-4 gap-4">
         {listPodcast.map((podcast) => (
@@ -174,14 +169,11 @@ export default function UserInfo() {
               className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded text-sm truncate"
               onClick={() => handleFavoriteClick(podcast)}
             >
-              Favourite
+              UnLike
             </button>
           </div>
         ))}
       </div>
-      <footer className="bg-gray-300 p-4 text-center">
-        &copy; 2023 Your Website Name
-      </footer>
     </div>
   );
 }
