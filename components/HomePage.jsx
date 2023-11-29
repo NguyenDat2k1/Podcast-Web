@@ -14,6 +14,9 @@ export default function UserInfo() {
   const [user_ID, setUser_ID] = useState("");
   const [listPodcast, setListPodcast] = useState([]);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [audioDownload, setAudioDownload] = useState(0);
+  const [scriptDownload, setScriptDownload] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
   const router = useRouter();
   let email = session?.user?.email;
   const getYouTubeId1 = (url) => {
@@ -69,9 +72,11 @@ export default function UserInfo() {
       router.push(`/detailPage/${level}/${title}/${id}`);
     }
   };
+
   const toggleProfileMenu = () => {
     setProfileMenuOpen(!profileMenuOpen);
   };
+
   const handleFavoriteClick = async (podcast) => {
     try {
       console.log("đang thả tym");
@@ -125,6 +130,55 @@ export default function UserInfo() {
     }
   };
 
+  const handleAudioDownload = async (e, podcast) => {
+    e.preventDefault();
+
+    try {
+      console.log("đang tăng lượt tải audio", audioDownload);
+      const res = await fetch("/api/updateAudioDowloadCount", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          podcastID: podcast._id,
+        }),
+      });
+      if (res.ok) {
+        setUpdateFlag((prev) => !prev);
+        router.push(podcast.audioPath);
+      } else {
+        console.log("Podcast registration failed.");
+      }
+      //
+    } catch (error) {
+      console.error("Error updating download count:", error);
+    }
+  };
+
+  const handleScriptDownload = async (e, podcast) => {
+    e.preventDefault();
+    console.log("here there:", podcast.transcriptPath);
+    try {
+      const res = await fetch("/api/updateScriptDowloadCount", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          podcastID: podcast._id,
+        }),
+      });
+      if (res.ok) {
+        setUpdateFlag((prev) => !prev);
+        router.push(podcast.transcriptPath);
+      } else {
+        console.log("Podcast registration failed.");
+      }
+    } catch (error) {
+      console.error("Error updating script download count:", error);
+    }
+  };
   return (
     <div>
       <Navbar />
@@ -150,13 +204,35 @@ export default function UserInfo() {
               Your browser does not support the audio element.
             </audio>
 
-            <a href={podcast.audioPath} download>
+            <a
+              href={podcast.audioPath}
+              download
+              onClick={(e) => {
+                if (!isDownloading) {
+                  handleAudioDownload(e, podcast);
+                }
+              }}
+            >
               <span className="mr-2">&#8226;</span> Download Audio
             </a>
+            <p className="inline-block ml-2">
+              Download Count: {podcast.audioDowload}
+            </p>
             <br />
-            <a href={podcast.transcriptPath} download>
+            <a
+              href={podcast.transcriptPath}
+              download
+              onClick={(e) => {
+                if (!isDownloading) {
+                  handleScriptDownload(e, podcast);
+                }
+              }}
+            >
               <span className="mr-2">&#8226;</span> Download Script
             </a>
+            <p className="inline-block ml-2">
+              Download Count: {podcast.scriptDowload}
+            </p>
             <div className="relative w-full h-0 pb-[56.25%] mb-4">
               <YouTube
                 videoId={getYouTubeId1(podcast.ytbPath)}

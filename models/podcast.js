@@ -30,6 +30,14 @@ const podcastSchema = new Schema(
       type: String,
       required: true,
     },
+    audioDowload: {
+      type: Number,
+      default: 0,
+    },
+    scriptDowload: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
