@@ -40,11 +40,7 @@ export default function LevelDetail({ params }) {
   const [tempName, setTempName] = useState("");
   const [updateFlag, setUpdateFlag] = useState(false);
   const [type, setType] = useState("Business");
-  const [user_ID, setUserID] = useState("");
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [favoriteStates, setFavoriteStates] = useState(
-    listPodcast.map(() => false)
-  );
+
   let audioPath = "";
   let transcriptPath = "";
   let ytbPath = "";
@@ -422,51 +418,6 @@ export default function LevelDetail({ params }) {
     }
   };
 
-  const handleFavoriteClick = async (podcast, index) => {
-    try {
-      console.log("đang thả tym");
-
-      try {
-        // call API để cập nhật podcast
-        const resUserExists = await fetch("api/userExists", {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        });
-        const { user } = await resUserExists.json();
-        if (user) {
-          console.log("đã lấy được user");
-          setUserID(user._id);
-        }
-        const res = await fetch("/api/updateLike", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            podcastID: podcast._id,
-            userID: user_ID,
-          }),
-        });
-
-        if (res.ok) {
-          // setIsFavorited(true);
-          setFavoriteStates((prev) =>
-            prev.map((state, i) => (i === index ? !state : state))
-          );
-          console.log("thả tym podcast thành công.");
-        } else {
-          console.log("thả tym podcast thất bại.");
-        }
-      } catch (error) {
-        console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
-      }
-    } catch (error) {
-      console.error("Lỗi trong handlefavourite:", error);
-    }
-  };
   return (
     <div>
       <Navbar />

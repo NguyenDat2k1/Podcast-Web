@@ -157,9 +157,9 @@ const Navbar = () => {
             </li>
             <li className="relative">
               {session?.user?.name === "Admin" && (
-                <Link href="/listType">
+                <Link href="/dashboard">
                   <button className="text-white border border-blue-400 rounded px-2 py-1">
-                    Thống Kê
+                    Dashboard
                   </button>
                 </Link>
               )}

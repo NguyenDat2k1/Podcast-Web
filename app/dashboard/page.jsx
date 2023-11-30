@@ -1,4 +1,5 @@
-import HomePage from "@/components/HomePage"
-export default function Dashboard() {
-    return <HomePage/>;
+import Dashboard from "@/components/Dashboard";
+
+export default async function dashboard() {
+  return <Dashboard />;
 }
