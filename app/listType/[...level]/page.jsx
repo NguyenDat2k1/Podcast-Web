@@ -746,12 +746,12 @@ export default function LevelDetail({ params }) {
                 className="absolute inset-0 w-full h-full"
               />
             </div>
-            <button
+            {/* <button
               className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded text-sm truncate"
               onClick={() => handleFavoriteClick(podcast)}
             >
               Favourite
-            </button>
+            </button> */}
             <button
               className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded text-sm truncate"
               onClick={() => handleDeleteClick(podcast)}

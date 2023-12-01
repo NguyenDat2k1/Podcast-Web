@@ -53,6 +53,31 @@ const Navbar = () => {
   //   searchInList();
   // }, [searchTerm, listPodcast]);
 
+  // useEffect(() => {
+  //   const searchInList = () => {
+  //     const results = listPodcast.filter((podcast) => {
+  //       const lowerCaseSearchTerm = searchTerm.toLowerCase();
+  //       const searchTerms = lowerCaseSearchTerm.split(" ");
+
+  //       // Kiểm tra xem mỗi từ khóa có xuất hiện trong tên, level hoặc type không
+  //       const isInName = searchTerms.every((term) =>
+  //         podcast.name.toLowerCase().includes(term)
+  //       );
+  //       const isInLevel = podcast.level
+  //         .toLowerCase()
+  //         .includes(lowerCaseSearchTerm);
+  //       const isInType = podcast.type
+  //         .toLowerCase()
+  //         .includes(lowerCaseSearchTerm);
+
+  //       return isInName || isInLevel || isInType;
+  //     });
+  //     setSearchResults(results);
+  //   };
+
+  //   searchInList();
+  // }, [searchTerm, listPodcast]);
+
   useEffect(() => {
     const searchInList = () => {
       const results = listPodcast.filter((podcast) => {
@@ -63,12 +88,12 @@ const Navbar = () => {
         const isInName = searchTerms.every((term) =>
           podcast.name.toLowerCase().includes(term)
         );
-        const isInLevel = podcast.level
-          .toLowerCase()
-          .includes(lowerCaseSearchTerm);
-        const isInType = podcast.type
-          .toLowerCase()
-          .includes(lowerCaseSearchTerm);
+        const isInLevel = searchTerms.some((term) =>
+          podcast.level.toLowerCase().includes(term)
+        );
+        const isInType = searchTerms.some((term) =>
+          podcast.type.toLowerCase().includes(term)
+        );
 
         return isInName || isInLevel || isInType;
       });
