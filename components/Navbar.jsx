@@ -11,9 +11,10 @@ const Navbar = () => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { data: session } = useSession();
   const [updateFlag, setUpdateFlag] = useState(false);
-
   const [listPodcast, setListPodcast] = useState([]);
+
   const router = useRouter();
+
   useEffect(() => {
     const getListPodcast = async () => {
       try {
@@ -42,20 +43,35 @@ const Navbar = () => {
   }, [updateFlag]);
 
   // useEffect(() => {
+  //   const searchInList = () => {
+  //     const results = listPodcast.filter((podcast) =>
+  //       podcast.name.toLowerCase().includes(searchTerm.toLowerCase())
+  //     );
+  //     setSearchResults(results);
+  //   };
 
-  //   setSearchResults([
-  //     { id: 1, title: "Podcast 1" },
-  //     { id: 2, title: "Podcast 2" },
-  //     // Thêm các podcast khác
-  //   ]);
-  // }, [searchTerm]);
+  //   searchInList();
+  // }, [searchTerm, listPodcast]);
 
   useEffect(() => {
-    // Tìm kiếm trong danh sách podcast khi searchTerm thay đổi
     const searchInList = () => {
-      const results = listPodcast.filter((podcast) =>
-        podcast.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const results = listPodcast.filter((podcast) => {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        const searchTerms = lowerCaseSearchTerm.split(" ");
+
+        // Kiểm tra xem mỗi từ khóa có xuất hiện trong tên, level hoặc type không
+        const isInName = searchTerms.every((term) =>
+          podcast.name.toLowerCase().includes(term)
+        );
+        const isInLevel = podcast.level
+          .toLowerCase()
+          .includes(lowerCaseSearchTerm);
+        const isInType = podcast.type
+          .toLowerCase()
+          .includes(lowerCaseSearchTerm);
+
+        return isInName || isInLevel || isInType;
+      });
       setSearchResults(results);
     };
 
@@ -71,6 +87,20 @@ const Navbar = () => {
 
     router.push(`/detailPage/${level}/${title}/${id}`);
   };
+  const levels = [
+    { key: "A1", value: "A1" },
+    { key: "A2", value: "A2" },
+    { key: "B1", value: "B1" },
+    { key: "B2", value: "B2" },
+    { key: "C1", value: "C1" },
+    { key: "C2", value: "C2" },
+  ];
+
+  const types = [
+    { key: "Business", value: "Business" },
+    { key: "Comedy", value: "Comedy" },
+    { key: "Detective", value: "Detective" },
+  ];
   return (
     <div>
       <nav className="bg-blue-400 p-4">
@@ -87,40 +117,24 @@ const Navbar = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
-              <div className="absolute left-20 top-full w-3/4 bg-white border rounded mt-1 p-2 overflow-hidden">
-                {/* Hàng đầu */}
-                <div className="flex justify-between mb-2">
-                  <Link href="/favouriteList">
-                    <div className="bg-blue-500 text-white px-2 py-1 rounded">
-                      A1
+              <div className="absolute left-20 top-full w-3/4 bg-white border rounded mt-1 p-2 overflow-hidden overflow-y-auto max-h-80">
+                {/* <div className="flex justify-between mb-2">
+                  {["A1", "A2", "B1", "B2", "C1", "C2"].map((item) => (
+                    <div
+                      key={item}
+                      onClick={() => handleClick(item)}
+                      className={`cursor-pointer ${
+                        selectedItem === item ? "bg-light-green" : ""
+                      }`}
+                    >
+                      <Link href="/`/listType/${id}`">
+                        <div className="bg-blue-400 text-white px-2 py-1 rounded">
+                          {item}
+                        </div>
+                      </Link>
                     </div>
-                  </Link>
-                  <Link href="/favouriteList">
-                    <div className="bg-blue-500 text-white px-2 py-1 rounded">
-                      A2
-                    </div>
-                  </Link>
-                  <Link href="/favouriteList">
-                    <div className="bg-blue-500 text-white px-2 py-1 rounded">
-                      B1
-                    </div>
-                  </Link>
-                  <Link href="/favouriteList">
-                    <div className="bg-blue-500 text-white px-2 py-1 rounded">
-                      B2
-                    </div>
-                  </Link>
-                  <Link href="/favouriteList">
-                    <div className="bg-blue-500 text-white px-2 py-1 rounded">
-                      C1
-                    </div>
-                  </Link>
-                  <Link href="/favouriteList">
-                    <div className="bg-blue-500 text-white px-2 py-1 rounded">
-                      C2
-                    </div>
-                  </Link>
-                </div>
+                  ))}
+                </div> */}
 
                 {searchResults.map((podcast) => (
                   <div
