@@ -1,5 +1,3 @@
-// pages/api/updatePassword.js
-
 import { connectMongoDB } from "@/lib/mongodb";
 import User from "@/models/user";
 import bcrypt from "bcryptjs";
@@ -9,23 +7,27 @@ export async function POST(req) {
   try {
     await connectMongoDB();
 
-    const { email, newPassword } = await req.json();
+    const { email, password } = await req.json();
 
     // Tìm kiếm người dùng dựa trên email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("_id password");
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Hash mật khẩu mới
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    // So sánh mật khẩu
+    const passwordsMatch = await bcrypt.compare(password, user.password);
 
-    // Cập nhật mật khẩu trong cơ sở dữ liệu
-    await User.updateOne({ email }, { $set: { password: hashedNewPassword } });
+    if (!passwordsMatch) {
+      return NextResponse.json(
+        { error: "Incorrect password" },
+        { status: 401 }
+      );
+    }
 
-    // Trả về thông báo cập nhật thành công
-    return NextResponse.json({ message: "Password updated successfully" });
+    // Trả về thông tin người dùng
+    return NextResponse.json({ user: { _id: user._id } });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

@@ -7,9 +7,11 @@ import Navbar from "./Navbar";
 
 export default function ListTypeForm() {
   const { data: session } = useSession();
-
+  let email = session?.user?.email;
   const router = useRouter();
-
+  if (email == null) {
+    router.push(`/login`);
+  }
   const items = [
     { id: "A1", title: "Item 1" },
     { id: "A2", title: "Item 2" },

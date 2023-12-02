@@ -4,13 +4,20 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import Navbar from "./Navbar";
 
 export default function Profile() {
+  const router = useRouter(); // Khai báo useRouter
   const { data: session } = useSession();
 
-  if (!session) redirect("/login");
+  // Sử dụng "if" để kiểm tra session và chuyển hướng
+
+  let email1 = session?.user?.email;
+
+  if (email1 == null) {
+    router.push(`/login`);
+  }
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
@@ -23,7 +30,6 @@ export default function Profile() {
     username: session?.user?.name,
     currentPassword: "",
     newPassword: "",
-    confirmPassword: "",
   });
 
   const handleChange = (e) => {
@@ -32,93 +38,65 @@ export default function Profile() {
   };
 
   const handleSubmit = async () => {
-    // e.preventDefault();
+    const { currentPassword, newPassword } = formData;
 
-    const { currentPassword, newPassword, confirmPassword } = formData;
-
-    // if ( !currentPassword ) {
-    //   console.log(currentPassword);
-    //   alert('Mật khẩu hiện tại không hợp lệ');
-    //   return;
-    // }
-
-    if (currentPassword !== session?.user?.password) {
-      console.log(session?.user?.password);
-      alert("Mật khẩu hiện tại không hợp lệ");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      alert("Mật khẩu mới và nhập lại mật khẩu mới không khớp");
+    if (!currentPassword || !newPassword) {
+      console.log("Hãy nhập đủ hai trường để cập nhật mật khẩu");
       return;
     }
 
     try {
-      const res = await fetch("api/updateProfile", {
+      // Gọi API để xác nhận mật khẩu hiện tại
+      const resConfirm = await fetch("/api/confirmPassword", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
-          password,
+          email: formData.email,
+          password: currentPassword,
+        }),
+      });
+      const { user } = await resConfirm.json();
+      if (!user) {
+        console.log("Mật khẩu hiện tại không hợp lệ");
+        return;
+      } else {
+        console.log("check mk hiện tại oke");
+      }
+
+      // Gọi API để cập nhật thông tin người dùng
+      const res = await fetch("/api/updateProfile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          newPassword: newPassword,
         }),
       });
 
       if (res.ok) {
-        const form = e.target;
-        form.reset();
-        router.push("/");
+        // Đặt lại form và chuyển hướng sau khi cập nhật thành công
+        setFormData({
+          email: session.user.email,
+          username: session.user.name,
+          currentPassword: "",
+          newPassword: "",
+        });
+        router.push("/login");
       } else {
-        console.log("User registration failed.");
+        console.log("Cập nhật thông tin người dùng thất bại.");
       }
     } catch (error) {
-      console.log("Error during registration: ", error);
+      console.log("Lỗi khi gọi API: ", error);
     }
   };
+
   return (
     <div>
-      {/* <nav className="bg-blue-400 p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <Link href="/">
-            <p className="text-white text-2xl font-bold">Trang Chủ</p>
-          </Link>
-          <ul className="flex space-x-4">
-            <li>
-              <Link href="/about">
-                <p className="text-white">Giới Thiệu</p>
-              </Link>
-            </li>
-            <li>
-              <Link href="/register">
-                <p className="text-white">Register</p>
-              </Link>
-            </li>
-            <li className="relative">
-              <button
-                className="text-white"
-                onClick={() => toggleProfileMenu()}
-              >
-                {session?.user?.name}
-              </button>
-              {profileMenuOpen && (
-                <div className="absolute top-full left-0 bg-blue-400 w-48 mt-2">
-                  <Link href="/profile">
-                    <div className="p-2 hover:bg-blue-700">Trang Cá Nhân</div>
-                  </Link>
-                  <div
-                    className="p-2 hover:bg-blue-700"
-                    onClick={() => signOut()}
-                  >
-                    Log Out
-                  </div>
-                </div>
-              )}
-            </li>
-          </ul>
-        </div>
-      </nav> */}
-<Navbar/>
+      <Navbar />
       <div className="flex h-screen items-center justify-center">
         <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-1/2">
           <div className="mb-4">
@@ -189,30 +167,14 @@ export default function Profile() {
               onChange={handleChange}
             />
           </div>
-          <div className="mb-6">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="confirm-password"
-            >
-              Nhập lại mật khẩu mới
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-              id="confirm-password"
-              type="password"
-              placeholder="Nhập lại mật khẩu mới"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
-          </div>
+
           <div className="flex items-center justify-between">
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               type="button"
               onClick={handleSubmit}
             >
-              Đăng ký
+              Cập nhật
             </button>
           </div>
         </form>

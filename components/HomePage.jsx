@@ -26,6 +26,9 @@ export default function UserInfo() {
     );
     return match && match[1];
   };
+  if (email == null) {
+    router.push(`/login`);
+  }
   useEffect(() => {
     const getListPodcast = async () => {
       try {
@@ -41,14 +44,31 @@ export default function UserInfo() {
             "Content-type": "application/json",
           },
         });
+        const resUserExists = await fetch("api/userExists", {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
+        const { user } = await resUserExists.json();
+        if (user) {
+          await setUser_ID(user._id);
+          console.log("đã lấy được id user:", user_ID);
+        }
         const podcasts = await resListPodcast.json();
         const favourites = await resListFavourite.json();
         console.log(podcasts);
 
         if (Array.isArray(podcasts)) {
+          // const notLikedPodcasts = podcasts.filter(
+          //   (podcast) =>
+          //     !favourites.some((fav) => fav.podcast_ID === podcast._id)
+          // );
+          const listFav = favourites.filter((fav) => fav.user_ID === user._id);
+
           const notLikedPodcasts = podcasts.filter(
-            (podcast) =>
-              !favourites.some((fav) => fav.podcast_ID === podcast._id)
+            (podcast) => !listFav.some((fav) => fav.podcast_ID === podcast._id)
           );
 
           setListPodcast(notLikedPodcasts);
@@ -73,9 +93,9 @@ export default function UserInfo() {
     }
   };
 
-  const toggleProfileMenu = () => {
-    setProfileMenuOpen(!profileMenuOpen);
-  };
+  // const toggleProfileMenu = () => {
+  //   setProfileMenuOpen(!profileMenuOpen);
+  // };
 
   const handleFavoriteClick = async (podcast) => {
     try {

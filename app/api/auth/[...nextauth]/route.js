@@ -1,49 +1,52 @@
 import NextAuth from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
-import {connectMongoDB } from "@/lib/mongodb";
+import { connectMongoDB } from "@/lib/mongodb";
 import User from "@/models/user";
-import bcrypt from 'bcryptjs';
-
+import bcrypt from "bcryptjs";
 
 export const authOptions = {
-    providers: [
-        CredentialsProvider({
-            name: "credentials",
-            credentials: {},
+  providers: [
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {},
 
-            async authorize(credentials) {
-                const { email, password } = credentials;
+      async authorize(credentials) {
+        const { email, password } = credentials;
 
-                try {
-                    await connectMongoDB();
-                    const user= await User.findOne({ email});
-                   
+        try {
+          await connectMongoDB();
+          const user = await User.findOne({ email });
 
-                    if (!user){
-                        return null;
-                    }
-                    const passwordsMatch = await bcrypt.compare(password, user.password);
+          if (!user) {
+            return null;
+          }
+          const passwordsMatch = await bcrypt.compare(password, user.password);
 
-                if(!passwordsMatch){
-                    return null;
-                }
-               
-                return user;
-                } catch (error) {
-                    console.log("Error: ", error);
-                }
-            },
-        }),
-    ],
-    sesstion: {
-        strategy: "jwt",
-    },
-    secret: process.env.NEXTAUTH_SECRET,
-    pages : {
-        signIn: "/",
-    },
+          if (!passwordsMatch) {
+            return null;
+          }
+
+          return user;
+        } catch (error) {
+          console.log("Error: ", error);
+        }
+      },
+    }),
+  ],
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  pages: {
+    signIn: "/homePage",
+    signOut: "http://localhost:3000/login",
+    // error: '/auth/error',
+
+    // newUser: '/auth/new-user'
+  },
 };
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };

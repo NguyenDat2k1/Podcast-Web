@@ -16,8 +16,12 @@ export default function Dashboard() {
   const [userCount, setUserCount] = useState(0);
   const [podcastCount, setPodcastCount] = useState(0);
   const [downloadCount, setDownloadCount] = useState(0);
-
+  const router = useRouter();
   let email = session?.user?.email;
+
+  if (email == null) {
+    router.push(`/login`);
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -129,7 +133,7 @@ export default function Dashboard() {
       },
     },
   };
-  const router = useRouter();
+
   const items = [
     { id: `${userCount}`, title: "USERS" },
     { id: `${downloadCount}`, title: "DOWNLOAD" },
