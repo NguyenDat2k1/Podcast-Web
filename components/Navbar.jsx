@@ -15,6 +15,11 @@ const Navbar = () => {
 
   const router = useRouter();
 
+  // let email = session?.user?.email;
+  // if (email == null) {
+  //   router.push(`/login`);
+  // }
+
   useEffect(() => {
     const getListPodcast = async () => {
       try {
@@ -142,7 +147,7 @@ const Navbar = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
-              <div className="absolute left-20 top-full w-3/4 bg-white border rounded mt-1 p-2 overflow-hidden overflow-y-auto max-h-80">
+              <div className="absolute left-20 top-full w-3/4 bg-white border rounded mt-1 p-2 overflow-hidden overflow-y-auto max-h-80 z-50">
                 {/* <div className="flex justify-between mb-2">
                   {["A1", "A2", "B1", "B2", "C1", "C2"].map((item) => (
                     <div

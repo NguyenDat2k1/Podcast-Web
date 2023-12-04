@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import YouTube from "react-youtube";
 import { redirect, useRouter } from "next/navigation";
+import Modal from "react-modal";
 
 export default function UserInfo() {
   const { data: session } = useSession();
@@ -17,8 +18,16 @@ export default function UserInfo() {
   const [audioDownload, setAudioDownload] = useState(0);
   const [scriptDownload, setScriptDownload] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showModal2, setShowModal2] = useState(false);
   const router = useRouter();
-  let email = session?.user?.email;
+  let tempURL = "";
+  const closeModal = () => {
+    setShowModal(false);
+  };
+  const closeModal2 = () => {
+    setShowModal2(false);
+  };
   const getYouTubeId1 = (url) => {
     console.log("url is here", url);
     const match = url.match(
@@ -26,6 +35,7 @@ export default function UserInfo() {
     );
     return match && match[1];
   };
+  let email = session?.user?.email;
   if (email == null) {
     router.push(`/login`);
   }
@@ -166,7 +176,7 @@ export default function UserInfo() {
       });
       if (res.ok) {
         setUpdateFlag((prev) => !prev);
-        router.push(podcast.audioPath);
+        setShowModal(true);
       } else {
         console.log("Podcast registration failed.");
       }
@@ -191,7 +201,7 @@ export default function UserInfo() {
       });
       if (res.ok) {
         setUpdateFlag((prev) => !prev);
-        router.push(podcast.transcriptPath);
+        setShowModal2(true);
       } else {
         console.log("Podcast registration failed.");
       }
@@ -235,6 +245,31 @@ export default function UserInfo() {
             >
               <span className="mr-2">&#8226;</span> Download Audio
             </a>
+            <Modal
+              isOpen={showModal}
+              onRequestClose={closeModal}
+              style={{
+                content: {
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  backgroundColor: "white",
+                  padding: "20px",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                },
+              }}
+            >
+              <div className="relative">
+                <span
+                  className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
+                  onClick={closeModal}
+                >
+                  &times;
+                </span>
+                <p>Copy the link below to download the audio:</p>
+                <p>{podcast.audioPath}</p>
+              </div>
+            </Modal>
             <p className="inline-block ml-2">
               Download Count: {podcast.audioDowload}
             </p>
@@ -250,6 +285,31 @@ export default function UserInfo() {
             >
               <span className="mr-2">&#8226;</span> Download Script
             </a>
+            <Modal
+              isOpen={showModal2}
+              onRequestClose={closeModal2}
+              style={{
+                content: {
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  backgroundColor: "white",
+                  padding: "20px",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                },
+              }}
+            >
+              <div className="relative">
+                <span
+                  className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
+                  onClick={closeModal2}
+                >
+                  &times;
+                </span>
+                <p>Copy the link below to download the Script:</p>
+                <p>{podcast.transcriptPath}</p>
+              </div>
+            </Modal>
             <p className="inline-block ml-2">
               Download Count: {podcast.scriptDowload}
             </p>
