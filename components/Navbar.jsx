@@ -14,11 +14,9 @@ const Navbar = () => {
   const [listPodcast, setListPodcast] = useState([]);
 
   const router = useRouter();
-
-  // let email = session?.user?.email;
-  // if (email == null) {
-  //   router.push(`/login`);
-  // }
+  const handleSignOut = () => {
+    router.push("/login");
+  };
 
   useEffect(() => {
     const getListPodcast = async () => {
@@ -46,42 +44,6 @@ const Navbar = () => {
 
     getListPodcast();
   }, [updateFlag]);
-
-  // useEffect(() => {
-  //   const searchInList = () => {
-  //     const results = listPodcast.filter((podcast) =>
-  //       podcast.name.toLowerCase().includes(searchTerm.toLowerCase())
-  //     );
-  //     setSearchResults(results);
-  //   };
-
-  //   searchInList();
-  // }, [searchTerm, listPodcast]);
-
-  // useEffect(() => {
-  //   const searchInList = () => {
-  //     const results = listPodcast.filter((podcast) => {
-  //       const lowerCaseSearchTerm = searchTerm.toLowerCase();
-  //       const searchTerms = lowerCaseSearchTerm.split(" ");
-
-  //       // Kiểm tra xem mỗi từ khóa có xuất hiện trong tên, level hoặc type không
-  //       const isInName = searchTerms.every((term) =>
-  //         podcast.name.toLowerCase().includes(term)
-  //       );
-  //       const isInLevel = podcast.level
-  //         .toLowerCase()
-  //         .includes(lowerCaseSearchTerm);
-  //       const isInType = podcast.type
-  //         .toLowerCase()
-  //         .includes(lowerCaseSearchTerm);
-
-  //       return isInName || isInLevel || isInType;
-  //     });
-  //     setSearchResults(results);
-  //   };
-
-  //   searchInList();
-  // }, [searchTerm, listPodcast]);
 
   useEffect(() => {
     const searchInList = () => {
@@ -231,7 +193,8 @@ const Navbar = () => {
                   </Link>
                   <div
                     className="p-2 hover:bg-blue-700 cursor-pointer"
-                    onClick={() => signOut()}
+                    // onClick={() => signOut()}
+                    onClick={handleSignOut}
                   >
                     Logout
                   </div>

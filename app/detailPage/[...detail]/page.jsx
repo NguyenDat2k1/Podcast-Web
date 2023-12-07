@@ -31,10 +31,10 @@ export default function DetailPage({ params }) {
 
   console.log(detail);
 
-  let email = session?.user?.email;
-  if (email == null) {
-    router.push(`/login`);
-  }
+  // let email = session?.user?.email;
+  // if (email == null) {
+  //   router.push(`/login`);
+  // }
 
   useEffect(() => {
     const getDetailPodcast = async () => {

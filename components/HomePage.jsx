@@ -21,7 +21,7 @@ export default function UserInfo() {
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const router = useRouter();
-  let tempURL = "";
+
   const closeModal = () => {
     setShowModal(false);
   };
@@ -39,6 +39,16 @@ export default function UserInfo() {
   if (email == null) {
     router.push(`/login`);
   }
+
+  useEffect(() => {
+    let tempID = "";
+    if (email != null || email != "") {
+      tempID = email;
+    } else {
+      email = tempID;
+    }
+  }, []);
+
   useEffect(() => {
     const getListPodcast = async () => {
       try {
@@ -71,10 +81,6 @@ export default function UserInfo() {
         console.log(podcasts);
 
         if (Array.isArray(podcasts)) {
-          // const notLikedPodcasts = podcasts.filter(
-          //   (podcast) =>
-          //     !favourites.some((fav) => fav.podcast_ID === podcast._id)
-          // );
           const listFav = favourites.filter((fav) => fav.user_ID === user._id);
 
           const notLikedPodcasts = podcasts.filter(

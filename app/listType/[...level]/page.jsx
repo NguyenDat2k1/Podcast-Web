@@ -163,6 +163,11 @@ export default function LevelDetail({ params }) {
 
       if (res.ok) {
         setUpdateFlag((prev) => !prev);
+        setIsPopupOpen(false);
+        setPodcastName("");
+        setDescribe("");
+        setType("Business");
+        setVideoSource("");
       } else {
         console.log("Podcast registration failed.");
       }
@@ -330,6 +335,10 @@ export default function LevelDetail({ params }) {
   };
 
   const closePopup = () => {
+    setPodcastName("");
+    setDescribe("");
+    setType("Business");
+    setVideoSource("");
     setIsPopupOpen(false);
   };
   //handle mở đóng cho button sửa
