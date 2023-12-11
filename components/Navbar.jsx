@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { redirect, useRouter } from "next/navigation";
 
-const Navbar = () => {
+const Navbar = (props) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -14,10 +14,11 @@ const Navbar = () => {
   const [listPodcast, setListPodcast] = useState([]);
 
   const router = useRouter();
-  const handleSignOut = () => {
-    router.push("/login");
-  };
 
+  let email = session?.user?.email;
+  if (email == null) {
+    router.push(`/login`);
+  }
   useEffect(() => {
     const getListPodcast = async () => {
       try {
@@ -110,24 +111,6 @@ const Navbar = () => {
             />
             {searchTerm && (
               <div className="absolute left-20 top-full w-3/4 bg-white border rounded mt-1 p-2 overflow-hidden overflow-y-auto max-h-80 z-50">
-                {/* <div className="flex justify-between mb-2">
-                  {["A1", "A2", "B1", "B2", "C1", "C2"].map((item) => (
-                    <div
-                      key={item}
-                      onClick={() => handleClick(item)}
-                      className={`cursor-pointer ${
-                        selectedItem === item ? "bg-light-green" : ""
-                      }`}
-                    >
-                      <Link href="/`/listType/${id}`">
-                        <div className="bg-blue-400 text-white px-2 py-1 rounded">
-                          {item}
-                        </div>
-                      </Link>
-                    </div>
-                  ))}
-                </div> */}
-
                 {searchResults.map((podcast) => (
                   <div
                     key={podcast.id}
@@ -137,7 +120,7 @@ const Navbar = () => {
                         event,
                         podcast.level,
                         podcast.name,
-                        podcast.id
+                        podcast._id
                       )
                     }
                   >
@@ -174,7 +157,16 @@ const Navbar = () => {
               {session?.user?.name === "Admin" && (
                 <Link href="/listType">
                   <button className="text-white border border-blue-400 rounded px-2 py-1">
-                    Create New Podcast
+                    Manage Podcast
+                  </button>
+                </Link>
+              )}
+            </li>
+            <li className="relative">
+              {session?.user?.name === "Admin" && (
+                <Link href="/manageUser">
+                  <button className="text-white border border-blue-400 rounded px-2 py-1">
+                    Manage User
                   </button>
                 </Link>
               )}
@@ -187,14 +179,14 @@ const Navbar = () => {
                 {session?.user?.name}
               </button>
               {profileMenuOpen && (
-                <div className="absolute top-full left-0 bg-blue-400 w-48 mt-2">
+                <div className="absolute top-full left-0 bg-blue-400 w-48 mt-2 z-50">
                   <Link href="/profile">
                     <div className="p-2 hover:bg-blue-700">Trang Cá Nhân</div>
                   </Link>
                   <div
                     className="p-2 hover:bg-blue-700 cursor-pointer"
-                    // onClick={() => signOut()}
-                    onClick={handleSignOut}
+                    onClick={() => signOut()}
+                    // onClick={handleSignOut}
                   >
                     Logout
                   </div>

@@ -9,7 +9,7 @@ import YouTube from "react-youtube";
 import { redirect, useRouter } from "next/navigation";
 import Modal from "react-modal";
 
-export default function UserInfo() {
+export default function UserInfo(props) {
   const { data: session } = useSession();
   const [updateFlag, setUpdateFlag] = useState(false);
   const [user_ID, setUser_ID] = useState("");
@@ -20,13 +20,19 @@ export default function UserInfo() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
+  const [showUnActive, setUnActive] = useState(false);
   const router = useRouter();
+  const listType = ["Business", "Comedy", "Detective"];
 
   const closeModal = () => {
     setShowModal(false);
   };
   const closeModal2 = () => {
     setShowModal2(false);
+  };
+  const closeUnActive = () => {
+    email == null;
+    router.push(`/login`);
   };
   const getYouTubeId1 = (url) => {
     console.log("url is here", url);
@@ -39,15 +45,6 @@ export default function UserInfo() {
   if (email == null) {
     router.push(`/login`);
   }
-
-  useEffect(() => {
-    let tempID = "";
-    if (email != null || email != "") {
-      tempID = email;
-    } else {
-      email = tempID;
-    }
-  }, []);
 
   useEffect(() => {
     const getListPodcast = async () => {
@@ -74,7 +71,11 @@ export default function UserInfo() {
         const { user } = await resUserExists.json();
         if (user) {
           await setUser_ID(user._id);
+
           console.log("đã lấy được id user:", user_ID);
+        }
+        if (user.isActive == "unactive") {
+          setUnActive(true);
         }
         const podcasts = await resListPodcast.json();
         const favourites = await resListFavourite.json();
@@ -108,10 +109,6 @@ export default function UserInfo() {
       router.push(`/detailPage/${level}/${title}/${id}`);
     }
   };
-
-  // const toggleProfileMenu = () => {
-  //   setProfileMenuOpen(!profileMenuOpen);
-  // };
 
   const handleFavoriteClick = async (podcast) => {
     try {
@@ -218,129 +215,220 @@ export default function UserInfo() {
   return (
     <div>
       <Navbar />
+      <Modal
+        isOpen={showUnActive}
+        onRequestClose={closeUnActive}
+        style={{
+          content: {
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            backgroundColor: "white",
+            padding: "20px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          },
+        }}
+      >
+        <div className="relative">
+          <span
+            className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
+            onClick={closeModal}
+          >
+            &times;
+          </span>
 
+          <p>
+            Tài khoản của bạn đã bị khóa, vui lòng liên hệ số 012345678 cho
+            admin đeer biết thêm chi tiết
+          </p>
+        </div>
+      </Modal>
       <div className="bg-gray-300 p-4 text-center h-96">
         Đây là banner của bạn. Bạn có thể tùy chỉnh nội dung và kiểu dáng của
-        banner tại đây.
+        banner tại đâyconst {email}.
       </div>
-
-      <div className="grid grid-cols-4 gap-4">
-        {listPodcast.map((podcast) => (
-          <div
-            className="border border-gray-300 p-4 relative cursor-pointer"
-            key={podcast.name}
-            onClick={(event) =>
-              handleBlockClick(event, podcast.name, podcast._id, podcast.level)
-            }
+      <div className="flex justify-between items-center p-4 bg-gray-200">
+        <div className="flex space-x-2">
+          {/* <button
+            className="bg-blue-500 text-white px-2 py-1 rounded-md"
+            onClick={() => A1List()}
           >
-            <h2>{podcast.name}</h2>
+            A1
+          </button>
+          <button
+            className="bg-blue-500 text-white px-2 py-1 rounded-md"
+            onClick={() => A2List()}
+          >
+            A2
+          </button>
+          <button
+            className="bg-blue-500 text-white px-2 py-1 rounded-md"
+            onClick={() => B1List()}
+          >
+            B1
+          </button>
+          <button
+            className="bg-blue-500 text-white px-2 py-1 rounded-md"
+            onClick={() => B2List()}
+          >
+            B2
+          </button>
 
-            <audio controls>
-              <source src={podcast.audioPath} type="audio/mpeg" />
-              Your browser does not support the audio element.
-            </audio>
-
-            <a
-              href={podcast.audioPath}
-              download
-              onClick={(e) => {
-                if (!isDownloading) {
-                  handleAudioDownload(e, podcast);
-                }
-              }}
-            >
-              <span className="mr-2">&#8226;</span> Download Audio
-            </a>
-            <Modal
-              isOpen={showModal}
-              onRequestClose={closeModal}
-              style={{
-                content: {
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  backgroundColor: "white",
-                  padding: "20px",
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                },
-              }}
-            >
-              <div className="relative">
-                <span
-                  className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
-                  onClick={closeModal}
-                >
-                  &times;
-                </span>
-                <p>Copy the link below to download the audio:</p>
-                <p>{podcast.audioPath}</p>
-              </div>
-            </Modal>
-            <p className="inline-block ml-2">
-              Download Count: {podcast.audioDowload}
-            </p>
-            <br />
-            <a
-              href={podcast.transcriptPath}
-              download
-              onClick={(e) => {
-                if (!isDownloading) {
-                  handleScriptDownload(e, podcast);
-                }
-              }}
-            >
-              <span className="mr-2">&#8226;</span> Download Script
-            </a>
-            <Modal
-              isOpen={showModal2}
-              onRequestClose={closeModal2}
-              style={{
-                content: {
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  backgroundColor: "white",
-                  padding: "20px",
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                },
-              }}
-            >
-              <div className="relative">
-                <span
-                  className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
-                  onClick={closeModal2}
-                >
-                  &times;
-                </span>
-                <p>Copy the link below to download the Script:</p>
-                <p>{podcast.transcriptPath}</p>
-              </div>
-            </Modal>
-            <p className="inline-block ml-2">
-              Download Count: {podcast.scriptDowload}
-            </p>
-            <div className="relative w-full h-0 pb-[56.25%] mb-4">
-              <YouTube
-                videoId={getYouTubeId1(podcast.ytbPath)}
-                opts={{
-                  width: "100%",
-                  height: "100%",
-                  playerVars: {
-                    autoplay: 0, // Tắt chế độ tự động chạy video
-                  },
-                }}
-                className="absolute inset-0 w-full h-full"
-              />
-            </div>
-            <button
-              className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded text-sm truncate"
-              onClick={() => handleFavoriteClick(podcast)}
-            >
-              Favourite
-            </button>
-          </div>
-        ))}
+          <button
+            className="bg-blue-500 text-white px-2 py-1 rounded-md"
+            onClick={() => C1List()}
+          >
+            C1
+          </button>
+          <button
+            className="bg-blue-500 text-white px-2 py-1 rounded-md"
+            onClick={() => C2List()}
+          >
+            C2
+          </button>
+          <select
+            id="level"
+            className="bg-blue-500 text-white px-2 py-1 rounded-md"
+          >
+            <option value="Business">Business</option>
+            <option value="Comedy">Comedy</option>
+            <option value="Detective">Detective</option>
+          </select> */}
+        </div>
       </div>
+      {listType.map((type) => (
+        <div key={type}>
+          <h2 className="ml-1 w-40 h-15 mt-10 ml-[-15px] border border-1 rounded bg-green-400">
+            {type}
+          </h2>
+          {/* <ul> */}
+          <div className="grid grid-cols-4 gap-4">
+            {listPodcast
+              .filter((podcast) => podcast.type === type)
+              .map((podcast) => (
+                <div
+                  className="border border-gray-300 p-4 relative cursor-pointer"
+                  key={podcast.name}
+                  onClick={(event) =>
+                    handleBlockClick(
+                      event,
+                      podcast.name,
+                      podcast._id,
+                      podcast.level
+                    )
+                  }
+                >
+                  <h2>{podcast.name}</h2>
+
+                  <audio controls>
+                    <source src={podcast.audioPath} type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                  </audio>
+
+                  <a
+                    href={podcast.audioPath}
+                    download
+                    onClick={(e) => {
+                      if (!isDownloading) {
+                        handleAudioDownload(e, podcast);
+                      }
+                    }}
+                  >
+                    <span className="mr-2">&#8226;</span> Download Audio
+                  </a>
+                  <Modal
+                    isOpen={showModal}
+                    onRequestClose={closeModal}
+                    style={{
+                      content: {
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        backgroundColor: "white",
+                        padding: "20px",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                      },
+                    }}
+                  >
+                    <div className="relative">
+                      <span
+                        className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
+                        onClick={closeModal}
+                      >
+                        &times;
+                      </span>
+                      <p>Copy the link below to download the audio:</p>
+                      <p>{podcast.audioPath}</p>
+                    </div>
+                  </Modal>
+                  <p className="inline-block ml-2">
+                    Download Count: {podcast.audioDowload}
+                  </p>
+                  <br />
+                  <a
+                    href={podcast.transcriptPath}
+                    download
+                    onClick={(e) => {
+                      if (!isDownloading) {
+                        handleScriptDownload(e, podcast);
+                      }
+                    }}
+                  >
+                    <span className="mr-2">&#8226;</span> Download Script
+                  </a>
+                  <Modal
+                    isOpen={showModal2}
+                    onRequestClose={closeModal2}
+                    style={{
+                      content: {
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        backgroundColor: "white",
+                        padding: "20px",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                      },
+                    }}
+                  >
+                    <div className="relative">
+                      <span
+                        className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
+                        onClick={closeModal2}
+                      >
+                        &times;
+                      </span>
+                      <p>Copy the link below to download the Script:</p>
+                      <p>{podcast.transcriptPath}</p>
+                    </div>
+                  </Modal>
+                  <p className="inline-block ml-2">
+                    Download Count: {podcast.scriptDowload}
+                  </p>
+                  <div className="relative w-full h-0 pb-[56.25%] mb-4">
+                    <YouTube
+                      videoId={getYouTubeId1(podcast.ytbPath)}
+                      opts={{
+                        width: "100%",
+                        height: "100%",
+                        playerVars: {
+                          autoplay: 0, // Tắt chế độ tự động chạy video
+                        },
+                      }}
+                      className="absolute inset-0 w-full h-full"
+                    />
+                  </div>
+                  <button
+                    className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded text-sm truncate"
+                    onClick={() => handleFavoriteClick(podcast)}
+                  >
+                    Favourite
+                  </button>
+                </div>
+              ))}
+            {/* </ul> */}
+          </div>
+        </div>
+      ))}
       <footer className="bg-gray-300 p-4 text-center">
         &copy; 2023 Your Website Name
       </footer>

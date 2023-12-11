@@ -40,7 +40,8 @@ export default function LevelDetail({ params }) {
   const [tempName, setTempName] = useState("");
   const [updateFlag, setUpdateFlag] = useState(false);
   const [type, setType] = useState("Business");
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
   let audioPath = "";
   let transcriptPath = "";
   let ytbPath = "";
@@ -427,17 +428,80 @@ export default function LevelDetail({ params }) {
     }
   };
 
+  //searchHandle
+  useEffect(() => {
+    const searchInList = () => {
+      const results = listPodcast.filter((podcast) => {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        const searchTerms = lowerCaseSearchTerm.split(" ");
+
+        // Kiểm tra xem mỗi từ khóa có xuất hiện trong tên, level hoặc type không
+        const isInName = searchTerms.every((term) =>
+          podcast.name.toLowerCase().includes(term)
+        );
+        const isInLevel = searchTerms.some((term) =>
+          podcast.level.toLowerCase().includes(term)
+        );
+        const isInType = searchTerms.some((term) =>
+          podcast.type.toLowerCase().includes(term)
+        );
+
+        return isInName || isInLevel || isInType;
+      });
+      setSearchResults(results);
+    };
+
+    searchInList();
+  }, [searchTerm, listPodcast]);
   return (
     <div>
       <Navbar />
-      <div className="flex justify-between items-center p-4 bg-gray-200">
+      <div className="flex justify-between items-center p-4 bg-gray-200 relative">
         <div className="flex space-x-2">
           <input
             type="text"
             placeholder="Tìm kiếm..."
             className="border border-gray-400 px-2 py-1 rounded-md"
-            onInput={(e) => handleSearch(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
+          {searchTerm && (
+            <div className="absolute left-2 top-2/3 w-1/5 bg-white border rounded mt-1 p-2 overflow-hidden overflow-y-auto max-h-80 z-50">
+              {searchResults.map((podcast) => (
+                <div
+                  key={podcast._id}
+                  className="mb-2 transition duration-300 ease-in-out transform hover:scale-105 pl-4 cursor-pointer"
+                  onClick={(event) =>
+                    handlePodcastClick(
+                      event,
+                      podcast.email,
+                      podcast.name,
+                      podcast._id
+                    )
+                  }
+                >
+                  <p className="text-blue-400 font-bold hover:text-blue-700">
+                    {podcast.name}
+                  </p>
+                  <p className="hover:text-blue-700">Level: {podcast.level}</p>
+                  <p className="hover:text-blue-700">Type: {podcast.type}</p>
+                  <button
+                    className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded text-sm truncate"
+                    onClick={() => handleDeleteClick(podcast)}
+                  >
+                    Delete
+                  </button>
+
+                  <button
+                    className="absolute top-0 right-[50px] bg-green-500 text-white p-1 rounded text-sm truncate"
+                    onClick={() => openEditPopup(podcast)}
+                  >
+                    Update
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <button
             className="bg-blue-500 text-white px-2 py-1 rounded-md"
             onClick={() => openPopup()}

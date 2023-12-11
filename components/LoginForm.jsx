@@ -8,7 +8,7 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const [flg, setFlg] = useState(false);
   const router = useRouter();
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +29,7 @@ export default function LoginForm() {
       console.log(error);
     }
   };
-
+  console.log("email", email);
   return (
     <div className="grid place-items-center h-screen">
       <div className="shadow-lg p-5 rounded-lg border-t-4 border-green-400">
@@ -46,11 +46,11 @@ export default function LoginForm() {
             type="password"
             placeholder="Password"
           />
-
+          {/* <Link href={{ pathname: "/homePage", query: email }}> */}
           <button className="bg-green-600 text-white font-bold cursor-pointer px-6 py-2">
             Login
           </button>
-
+          {/* </Link> */}
           {error && (
             <div className="bg-red-500 text-white w-fit text-sm py-1 px-3 rounded-md mt-2">
               {error}
@@ -60,6 +60,7 @@ export default function LoginForm() {
           <Link className="text-sm mt-3 text-right" href={"/register"}>
             Don't have any account? <span className="underline">Register</span>
           </Link>
+          {flg ? <homePage email={email} /> : null}
         </form>
       </div>
     </div>
