@@ -20,9 +20,7 @@ export default function UserInfo(props) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
-  const [showOn, setShowOn] = useState(false);
   const [showUnActive, setUnActive] = useState(false);
-  const [showToLogin, setToLogin] = useState(false);
   const router = useRouter();
   const listType = ["Business", "Comedy", "Detective"];
 
@@ -36,14 +34,7 @@ export default function UserInfo(props) {
     email == null;
     // router.push(`/login`);
   };
-  const closeLogin = () => {
-    email == null;
-    return;
-    // router.push(`/login`);
-  };
-  const closeToLogin = () => {
-    setShowOn(false);
-  };
+
   const getYouTubeId1 = (url) => {
     console.log("url is here", url);
     const match = url.match(
@@ -123,62 +114,11 @@ export default function UserInfo(props) {
   }, [updateFlag]);
 
   const handleBlockClick = async (event, title, id, level) => {
-    // const isClickedInsideBlock =
-    //   event.target === event.currentTarget ||
-    //   event.target.tagName.toLowerCase() === "span";
-    try {
-      // Gọi API để kiểm tra user và lấy userID
-      const resUserExists = await fetch("api/userExists", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-      const { user } = await resUserExists.json();
-      if (user) {
-        await setUser_ID(user._id);
-        console.log("đã lấy được id user:", user_ID);
-      }
-      console.log("đã lấy được user:", id, user_ID);
-      // Gọi API để cập nhật thích podcast
-      const res = await fetch("/api/addToHistory", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          podcast_ID: id,
-          user_ID: user_ID,
-        }),
-      });
-
-      if (res.ok) {
-        console.log("cập nhật history podcast thành công.");
-      } else {
-        console.log("cập nhật history podcast thất bại.");
-      }
-    } catch (error) {
-      console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
-    }
     const isClickedInsideBlock =
-      event.target.tagName.toLowerCase() === "button" ||
-      event.target.closest("button") !== null;
-    if (isClickedInsideBlock) {
-      router.push(`/detailPage/${level}/${title}/${id}`);
-    }
-  };
-
-  const handleFavoriteClick = async (podcast) => {
-    if (email == null) {
-      setToLogin(true);
-      setTimeout(() => {
-        return;
-      }, 10000);
-    }
-    try {
-      console.log("đang thả tym");
-      console.log("email fetching: ", email);
+      event.target === event.currentTarget ||
+      event.target.tagName.toLowerCase() === "span";
+    console.log("ssssssss");
+    if (email != null) {
       try {
         // Gọi API để kiểm tra user và lấy userID
         const resUserExists = await fetch("api/userExists", {
@@ -193,38 +133,90 @@ export default function UserInfo(props) {
           await setUser_ID(user._id);
           console.log("đã lấy được id user:", user_ID);
         }
-        console.log("đã lấy được user:", podcast._id, user_ID);
+        console.log("đã lấy được user:", id, user_ID);
         // Gọi API để cập nhật thích podcast
-        const res = await fetch("/api/updateLike", {
+        const res = await fetch("/api/addToHistory", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            podcast_ID: podcast._id,
+            podcast_ID: id,
             user_ID: user_ID,
           }),
         });
 
         if (res.ok) {
-          // Tạo một mảng mới không chứa podcast cụ thể
-          const updatedList = listPodcast.filter((p) => p._id !== podcast._id);
-          setListPodcast(updatedList);
-
-          // Cập nhật trạng thái yêu thích
-          // setFavoriteStates((prev) =>
-          //   prev.map((state, i) => (i === index ? !state : state))
-          // );
-
-          console.log("thả tym podcast thành công.");
+          console.log("cập nhật history podcast thành công.");
         } else {
-          console.log("thả tym podcast thất bại.");
+          console.log("cập nhật history podcast thất bại.");
         }
       } catch (error) {
         console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
       }
-    } catch (error) {
-      console.error("Lỗi trong handlefavourite:", error);
+    }
+
+    if (isClickedInsideBlock) {
+      router.push(`/detailPage/${level}/${title}/${id}`);
+    }
+  };
+
+  const handleFavoriteClick = async (podcast) => {
+    if (email != null) {
+      try {
+        console.log("đang thả tym");
+        console.log("email fetching: ", email);
+        try {
+          // Gọi API để kiểm tra user và lấy userID
+          const resUserExists = await fetch("api/userExists", {
+            method: "POST",
+            headers: {
+              "Content-type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          });
+          const { user } = await resUserExists.json();
+          if (user) {
+            await setUser_ID(user._id);
+            console.log("đã lấy được id user:", user_ID);
+          }
+          console.log("đã lấy được user:", podcast._id, user_ID);
+          // Gọi API để cập nhật thích podcast
+          const res = await fetch("/api/updateLike", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              podcast_ID: podcast._id,
+              user_ID: user_ID,
+            }),
+          });
+
+          if (res.ok) {
+            // Tạo một mảng mới không chứa podcast cụ thể
+            const updatedList = listPodcast.filter(
+              (p) => p._id !== podcast._id
+            );
+            setListPodcast(updatedList);
+
+            // Cập nhật trạng thái yêu thích
+            // setFavoriteStates((prev) =>
+            //   prev.map((state, i) => (i === index ? !state : state))
+            // );
+
+            console.log("thả tym podcast thành công.");
+          } else {
+            console.log("thả tym podcast thất bại.");
+          }
+        } catch (error) {
+          console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
+        }
+      } catch (error) {
+        console.error("Lỗi trong handlefavourite:", error);
+      }
+    } else {
+      router.push(`/login`);
     }
   };
 
@@ -308,31 +300,7 @@ export default function UserInfo(props) {
           </p>
         </div>
       </Modal>
-      <Modal
-        isOpen={showToLogin}
-        onRequestClose={closeLogin}
-        style={{
-          content: {
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            backgroundColor: "white",
-            padding: "20px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          },
-        }}
-      >
-        <div className="relative">
-          <span
-            className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
-            onClick={closeToLogin}
-          >
-            &times;
-          </span>
 
-          <p>You need to login before start do something, friend!!!</p>
-        </div>
-      </Modal>
       <div className="bg-gray-300 p-4 text-center h-96">
         Đây là banner của bạn. Bạn có thể tùy chỉnh nội dung và kiểu dáng của
         banner tại đâyconst {email}.
@@ -399,16 +367,28 @@ export default function UserInfo(props) {
                 <div
                   className="border border-gray-300 p-4 relative cursor-pointer"
                   key={podcast.name}
-                  onClick={(event) =>
-                    handleBlockClick(
-                      event,
-                      podcast.name,
-                      podcast._id,
-                      podcast.level
-                    )
-                  }
+                  // onClick={(event) =>
+                  //   handleBlockClick(
+                  //     event,
+                  //     podcast.name,
+                  //     podcast._id,
+                  //     podcast.level
+                  //   )
+                  // }
                 >
-                  <h2>{podcast.name}</h2>
+                  <h2
+                    className="cursor-pointer"
+                    onClick={(event) =>
+                      handleBlockClick(
+                        event,
+                        podcast.name,
+                        podcast._id,
+                        podcast.level
+                      )
+                    }
+                  >
+                    {podcast.name}
+                  </h2>
 
                   <audio controls>
                     <source src={podcast.audioPath} type="audio/mpeg" />

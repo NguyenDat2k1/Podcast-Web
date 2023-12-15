@@ -10,7 +10,7 @@ export default function ListTypeForm() {
   let email = session?.user?.email;
   const router = useRouter();
   if (email == null) {
-    router.push(`/login`);
+    router.push(`/homePage`);
   }
   const items = [
     { id: "A1", title: "Level A1" },

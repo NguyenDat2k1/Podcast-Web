@@ -18,7 +18,7 @@ export default function FavouriteList() {
   let ytbPath = "";
   const router = useRouter();
   if (email == null) {
-    router.push(`/login`);
+    router.push(`/homePage`);
   }
   useEffect(() => {
     const getListPodcast = async () => {

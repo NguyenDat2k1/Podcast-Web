@@ -17,9 +17,9 @@ export default function HistorySeen() {
   let transcriptPath = "";
   let ytbPath = "";
   const router = useRouter();
-  //   if (email == null) {
-  //     router.push(`/login`);
-  //   }
+  if (email == null) {
+    router.push(`/homePage`);
+  }
   useEffect(() => {
     const getListPodcast = async () => {
       try {

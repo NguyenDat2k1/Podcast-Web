@@ -16,9 +16,9 @@ const Navbar = (props) => {
   const router = useRouter();
 
   let email = session?.user?.email;
-  if (email == null) {
-    router.push(`/homePage`);
-  }
+  // if (email == null) {
+  //   router.push(`/homePage`);
+  // }
   useEffect(() => {
     const getListPodcast = async () => {
       try {

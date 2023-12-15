@@ -17,11 +17,11 @@ export default function Dashboard() {
   const [podcastCount, setPodcastCount] = useState(0);
   const [downloadCount, setDownloadCount] = useState(0);
   const router = useRouter();
-  // let email = session?.user?.email;
+  let email = session?.user?.email;
 
-  // if (email == null) {
-  //   router.push(`/login`);
-  // }
+  if (email == null) {
+    router.push(`/homePage`);
+  }
 
   useEffect(() => {
     const fetchData = async () => {
