@@ -17,7 +17,7 @@ const Navbar = (props) => {
 
   let email = session?.user?.email;
   if (email == null) {
-    router.push(`/login`);
+    router.push(`/homePage`);
   }
   useEffect(() => {
     const getListPodcast = async () => {
@@ -145,6 +145,13 @@ const Navbar = (props) => {
               </Link>
             </li>
             <li className="relative">
+              <Link href="/historySeen">
+                <button className="text-white border border-blue-400 rounded px-2 py-1">
+                  History Seen
+                </button>
+              </Link>
+            </li>
+            <li className="relative">
               {session?.user?.name === "Admin" && (
                 <Link href="/dashboard">
                   <button className="text-white border border-blue-400 rounded px-2 py-1">
@@ -171,6 +178,16 @@ const Navbar = (props) => {
                 </Link>
               )}
             </li>
+            <li className="relative">
+              {email == null && (
+                <Link href="/login">
+                  <button className="text-white border border-blue-400 rounded px-2 py-1">
+                    Login/Register
+                  </button>
+                </Link>
+              )}
+            </li>
+
             <li className="relative">
               <button
                 className="text-white pt-1.5"

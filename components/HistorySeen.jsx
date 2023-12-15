@@ -7,7 +7,7 @@ import { redirect, useRouter } from "next/navigation";
 import YouTube from "react-youtube";
 import { useSession } from "next-auth/react";
 
-export default function FavouriteList() {
+export default function HistorySeen() {
   const { data: session } = useSession();
   const [listPodcast, setListPodcast] = useState([]);
   const [updateFlag, setUpdateFlag] = useState(false);
@@ -17,9 +17,9 @@ export default function FavouriteList() {
   let transcriptPath = "";
   let ytbPath = "";
   const router = useRouter();
-  if (email == null) {
-    router.push(`/login`);
-  }
+  //   if (email == null) {
+  //     router.push(`/login`);
+  //   }
   useEffect(() => {
     const getListPodcast = async () => {
       try {
@@ -29,7 +29,7 @@ export default function FavouriteList() {
             "Content-type": "application/json",
           },
         });
-        const resListFavourite = await fetch("/api/getFavouriteList", {
+        const resHistoryList = await fetch("/api/getHistoryList", {
           method: "GET",
           headers: {
             "Content-type": "application/json",
@@ -48,16 +48,18 @@ export default function FavouriteList() {
           console.log("đã lấy được id user:", user_ID);
         }
         const podcasts = await resListPodcast.json();
-        const favourites = await resListFavourite.json();
+        const historyList = await resHistoryList.json();
         console.log(podcasts);
 
         if (Array.isArray(podcasts)) {
           // const likedPodcasts = podcasts.filter((podcast) =>
           //   favourites.some((fav) => fav.podcast_ID === podcast._id)
           // );
-          const listFav = favourites.filter((fav) => fav.user_ID === user._id);
+          const listHistory = historyList.filter(
+            (his) => his.user_ID === user._id
+          );
           const likedPodcasts = podcasts.filter((podcast) =>
-            listFav.some((fav) => fav.podcast_ID === podcast._id)
+            listHistory.some((his) => his.podcast_ID === podcast._id)
           );
 
           setListPodcast(likedPodcasts);
@@ -80,45 +82,11 @@ export default function FavouriteList() {
     return match && match[1];
   };
 
-  const handleBlockClick = async (event, title, id, level) => {
+  const handleBlockClick = (event, title, id, level) => {
     const isClickedInsideBlock =
       event.target === event.currentTarget ||
       event.target.tagName.toLowerCase() === "span";
-    try {
-      // Gọi API để kiểm tra user và lấy userID
-      const resUserExists = await fetch("api/userExists", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-      const { user } = await resUserExists.json();
-      if (user) {
-        await setUser_ID(user._id);
-        console.log("đã lấy được id user:", user_ID);
-      }
-      console.log("đã lấy được user:", podcast._id, user_ID);
-      // Gọi API để cập nhật thích podcast
-      const res = await fetch("/api/addToHistory", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          podcast_ID: id,
-          user_ID: user_ID,
-        }),
-      });
 
-      if (res.ok) {
-        console.log("cập nhật history podcast thành công.");
-      } else {
-        console.log("cập nhật podcast thất bại.");
-      }
-    } catch (error) {
-      console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
-    }
     if (isClickedInsideBlock) {
       router.push(`/detailPage/${level}/${title}/${id}`);
     }
@@ -176,10 +144,32 @@ export default function FavouriteList() {
       console.error("Lỗi trong handlefavourite:", error);
     }
   };
+
+  const formatDate = (dateString) => {
+    try {
+      // Sử dụng phương thức slice để giữ lại phần đầu của chuỗi (đến ngày)
+      console.log("datesstring: ", dateString);
+      const newDate = String(dateString);
+      console.log("datesstring after: ", newDate);
+      return newDate;
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Invalid Date";
+    }
+  };
   return (
     <div>
       <Navbar />
-
+      <div className="flex justify-between items-center p-4 bg-gray-200 relative">
+        <div className="flex space-x-2">
+          <button
+            className="bg-blue-500 text-white px-2 py-1 rounded-md"
+            onClick={() => openPopup()}
+          >
+            Delete seen history
+          </button>
+        </div>
+      </div>
       <div className="grid grid-cols-4 gap-4">
         {listPodcast.map((podcast) => (
           <div
@@ -191,7 +181,9 @@ export default function FavouriteList() {
           >
             <h2>{podcast.name}</h2>
 
-            <audio controls>
+            <p>Have seen at:</p>
+            <h2>{formatDate(podcast.updatedAt)}</h2>
+            {/* <audio controls>
               <source src={podcast.audioPath} type="audio/mpeg" />
               Your browser does not support the audio element.
             </audio>
@@ -221,7 +213,7 @@ export default function FavouriteList() {
               onClick={() => handleFavoriteClick(podcast)}
             >
               UnLike
-            </button>
+            </button> */}
           </div>
         ))}
       </div>

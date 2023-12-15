@@ -20,7 +20,9 @@ export default function UserInfo(props) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
+  const [showOn, setShowOn] = useState(false);
   const [showUnActive, setUnActive] = useState(false);
+  const [showToLogin, setToLogin] = useState(false);
   const router = useRouter();
   const listType = ["Business", "Comedy", "Detective"];
 
@@ -32,7 +34,15 @@ export default function UserInfo(props) {
   };
   const closeUnActive = () => {
     email == null;
-    router.push(`/login`);
+    // router.push(`/login`);
+  };
+  const closeLogin = () => {
+    email == null;
+    return;
+    // router.push(`/login`);
+  };
+  const closeToLogin = () => {
+    setShowOn(false);
   };
   const getYouTubeId1 = (url) => {
     console.log("url is here", url);
@@ -42,9 +52,9 @@ export default function UserInfo(props) {
     return match && match[1];
   };
   let email = session?.user?.email;
-  if (email == null) {
-    router.push(`/login`);
-  }
+  // if (email == null) {
+  //   router.push(`/login`);
+  // }
 
   useEffect(() => {
     const getListPodcast = async () => {
@@ -55,42 +65,54 @@ export default function UserInfo(props) {
             "Content-type": "application/json",
           },
         });
-        const resListFavourite = await fetch("/api/getFavouriteList", {
-          method: "GET",
-          headers: {
-            "Content-type": "application/json",
-          },
-        });
-        const resUserExists = await fetch("api/userExists", {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        });
-        const { user } = await resUserExists.json();
-        if (user) {
-          await setUser_ID(user._id);
-
-          console.log("đã lấy được id user:", user_ID);
-        }
-        if (user.isActive == "unactive") {
-          setUnActive(true);
-        }
         const podcasts = await resListPodcast.json();
-        const favourites = await resListFavourite.json();
-        console.log(podcasts);
+        if (email != null) {
+          const resListFavourite = await fetch("/api/getFavouriteList", {
+            method: "GET",
+            headers: {
+              "Content-type": "application/json",
+            },
+          });
+          const resUserExists = await fetch("api/userExists", {
+            method: "POST",
+            headers: {
+              "Content-type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          });
+          const { user } = await resUserExists.json();
+          if (user) {
+            await setUser_ID(user._id);
 
-        if (Array.isArray(podcasts)) {
-          const listFav = favourites.filter((fav) => fav.user_ID === user._id);
+            console.log("đã lấy được id user:", user_ID);
+          }
+          if (user.isActive == "unactive") {
+            setUnActive(true);
+          }
 
-          const notLikedPodcasts = podcasts.filter(
-            (podcast) => !listFav.some((fav) => fav.podcast_ID === podcast._id)
-          );
+          const favourites = await resListFavourite.json();
+          console.log(podcasts);
 
-          setListPodcast(notLikedPodcasts);
+          if (Array.isArray(podcasts)) {
+            const listFav = favourites.filter(
+              (fav) => fav.user_ID === user._id
+            );
+
+            const notLikedPodcasts = podcasts.filter(
+              (podcast) =>
+                !listFav.some((fav) => fav.podcast_ID === podcast._id)
+            );
+
+            setListPodcast(notLikedPodcasts);
+          } else {
+            console.error("Invalid data structure in the response:");
+          }
         } else {
-          console.error("Invalid data structure in the response:");
+          if (Array.isArray(podcasts)) {
+            setListPodcast(podcasts);
+          } else {
+            console.error("Invalid data structure in the response:");
+          }
         }
       } catch (error) {
         console.error("Error fetching data from MongoDB:", error);
@@ -100,17 +122,60 @@ export default function UserInfo(props) {
     getListPodcast();
   }, [updateFlag]);
 
-  const handleBlockClick = (event, title, id, level) => {
-    const isClickedInsideBlock =
-      event.target === event.currentTarget ||
-      event.target.tagName.toLowerCase() === "span";
+  const handleBlockClick = async (event, title, id, level) => {
+    // const isClickedInsideBlock =
+    //   event.target === event.currentTarget ||
+    //   event.target.tagName.toLowerCase() === "span";
+    try {
+      // Gọi API để kiểm tra user và lấy userID
+      const resUserExists = await fetch("api/userExists", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+      const { user } = await resUserExists.json();
+      if (user) {
+        await setUser_ID(user._id);
+        console.log("đã lấy được id user:", user_ID);
+      }
+      console.log("đã lấy được user:", id, user_ID);
+      // Gọi API để cập nhật thích podcast
+      const res = await fetch("/api/addToHistory", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          podcast_ID: id,
+          user_ID: user_ID,
+        }),
+      });
 
+      if (res.ok) {
+        console.log("cập nhật history podcast thành công.");
+      } else {
+        console.log("cập nhật history podcast thất bại.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
+    }
+    const isClickedInsideBlock =
+      event.target.tagName.toLowerCase() === "button" ||
+      event.target.closest("button") !== null;
     if (isClickedInsideBlock) {
       router.push(`/detailPage/${level}/${title}/${id}`);
     }
   };
 
   const handleFavoriteClick = async (podcast) => {
+    if (email == null) {
+      setToLogin(true);
+      setTimeout(() => {
+        return;
+      }, 10000);
+    }
     try {
       console.log("đang thả tym");
       console.log("email fetching: ", email);
@@ -243,6 +308,31 @@ export default function UserInfo(props) {
           </p>
         </div>
       </Modal>
+      <Modal
+        isOpen={showToLogin}
+        onRequestClose={closeLogin}
+        style={{
+          content: {
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            backgroundColor: "white",
+            padding: "20px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          },
+        }}
+      >
+        <div className="relative">
+          <span
+            className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
+            onClick={closeToLogin}
+          >
+            &times;
+          </span>
+
+          <p>You need to login before start do something, friend!!!</p>
+        </div>
+      </Modal>
       <div className="bg-gray-300 p-4 text-center h-96">
         Đây là banner của bạn. Bạn có thể tùy chỉnh nội dung và kiểu dáng của
         banner tại đâyconst {email}.
@@ -298,7 +388,7 @@ export default function UserInfo(props) {
       </div>
       {listType.map((type) => (
         <div key={type}>
-          <h2 className="ml-1 w-40 h-15 mt-10 ml-[-15px] border border-1 rounded bg-green-400">
+          <h2 className="ml-5 w-40 h-15 mt-10 ml-[-15px] border border-1 rounded bg-green-400">
             {type}
           </h2>
           {/* <ul> */}
