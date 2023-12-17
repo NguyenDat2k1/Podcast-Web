@@ -14,6 +14,10 @@ const historySchema = new Schema(
       type: String,
       required: true,
     },
+    podcast_Level: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

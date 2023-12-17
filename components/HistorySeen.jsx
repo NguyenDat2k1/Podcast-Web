@@ -50,18 +50,16 @@ export default function HistorySeen() {
         const podcasts = await resListPodcast.json();
         const historyList = await resHistoryList.json();
         console.log(podcasts);
-
+        console.log("đã lấy được historyList:", historyList);
         if (Array.isArray(podcasts)) {
-          // const likedPodcasts = podcasts.filter((podcast) =>
-          //   favourites.some((fav) => fav.podcast_ID === podcast._id)
-          // );
           const listHistory = historyList.filter(
             (his) => his.user_ID === user._id
           );
-          const likedPodcasts = podcasts.filter((podcast) =>
-            listHistory.some((his) => his.podcast_ID === podcast._id)
+          console.log("listHistory: ", listHistory);
+          const likedPodcasts = listHistory.filter((podcast) =>
+            podcasts.some((his) => his._id === podcast.podcast_ID)
           );
-
+          console.log("likedPodcasts: ", likedPodcasts);
           setListPodcast(likedPodcasts);
         } else {
           console.error("Invalid data structure in the response:");
@@ -92,64 +90,11 @@ export default function HistorySeen() {
     }
   };
 
-  const handleFavoriteClick = async (podcast) => {
-    try {
-      console.log("đang xóa tym");
-      console.log("email fetching: ", email);
-      try {
-        // Gọi API để kiểm tra user và lấy userID
-        const resUserExists = await fetch("api/userExists", {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        });
-        const { user } = await resUserExists.json();
-        if (user) {
-          await setUser_ID(user._id);
-          console.log("đã lấy được id user:", user_ID);
-        }
-        console.log("đã lấy được user:", podcast._id, user_ID);
-        // Gọi API để cập nhật thích podcast
-        const res = await fetch("/api/updateUnlike", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            podcastID: podcast._id,
-            userID: user_ID,
-          }),
-        });
-
-        if (res.ok) {
-          // Tạo một mảng mới không chứa podcast cụ thể
-          const updatedList = listPodcast.filter((p) => p._id !== podcast._id);
-          setListPodcast(updatedList);
-
-          // Cập nhật trạng thái yêu thích
-          // setFavoriteStates((prev) =>
-          //   prev.map((state, i) => (i === index ? !state : state))
-          // );
-
-          console.log("XÓa tym podcast thành công.");
-        } else {
-          console.log("Xóa tym podcast thất bại.");
-        }
-      } catch (error) {
-        console.error("Lỗi khi xử lý Xóa tym:", error);
-      }
-    } catch (error) {
-      console.error("Lỗi trong handlefavourite:", error);
-    }
-  };
-
   const formatDate = (dateString) => {
     try {
-      // Sử dụng phương thức slice để giữ lại phần đầu của chuỗi (đến ngày)
       console.log("datesstring: ", dateString);
-      const newDate = String(dateString);
+      const tempDate = String(dateString);
+      const newDate = tempDate.substring(0, 10);
       console.log("datesstring after: ", newDate);
       return newDate;
     } catch (error) {
@@ -157,6 +102,41 @@ export default function HistorySeen() {
       return "Invalid Date";
     }
   };
+
+  //xóa bản ghi trong lịch sử
+  const handleDeleteClick = async (podcast) => {
+    const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa không?");
+
+    if (isConfirmed) {
+      try {
+        console.log("delete fileeeee is coming");
+
+        try {
+          const res = await fetch("/api/deleteHistory", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              historyID: podcast._id,
+            }),
+          });
+
+          if (res.ok) {
+            setUpdateFlag((prev) => !prev);
+            console.log("XÓA podcast thành công.");
+          } else {
+            console.log("XÓA podcast thất bại.");
+          }
+        } catch (error) {
+          console.error("Lỗi khi xử lý tệp âm thanh hoặc văn bản:", error);
+        }
+      } catch (error) {
+        console.error("XÓA trong handleUpdate:", error);
+      }
+    }
+  };
+  console.log("list:", listPodcast);
   return (
     <div>
       <Navbar />
@@ -173,15 +153,24 @@ export default function HistorySeen() {
       <div className="grid grid-cols-4 gap-4">
         {listPodcast.map((podcast) => (
           <div
-            className="border border-gray-300 p-4 relative cursor-pointer"
-            key={podcast.name}
+            className="border border-gray-300 p-4 relative cursor-pointer relative"
+            key={podcast.podcast_Name}
             onClick={(event) =>
-              handleBlockClick(event, podcast.name, podcast._id, podcast.level)
+              handleBlockClick(
+                event,
+                podcast.podcast_Name,
+                podcast.podcast_ID,
+                podcast.podcast_Level
+              )
             }
           >
-            <h2>{podcast.name}</h2>
+            <h2 className="text-green-500 font-semibold text-lg">
+              {podcast.podcast_Name}
+            </h2>
 
-            <p>Have seen at:</p>
+            <p className="text-blue-400  text-lg">Level at:</p>
+            <h2>{podcast.podcast_Level}</h2>
+            <p className="text-blue-400  text-lg">Have seen at:</p>
             <h2>{formatDate(podcast.updatedAt)}</h2>
             {/* <audio controls>
               <source src={podcast.audioPath} type="audio/mpeg" />
@@ -214,6 +203,12 @@ export default function HistorySeen() {
             >
               UnLike
             </button> */}
+            <button
+              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded text-sm truncate"
+              onClick={() => handleDeleteClick(podcast)}
+            >
+              Delete
+            </button>
           </div>
         ))}
       </div>

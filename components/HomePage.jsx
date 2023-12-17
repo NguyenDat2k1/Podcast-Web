@@ -143,6 +143,8 @@ export default function UserInfo(props) {
           body: JSON.stringify({
             podcast_ID: id,
             user_ID: user_ID,
+            podcast_Name: title,
+            podcast_Level: level,
           }),
         });
 
@@ -356,7 +358,7 @@ export default function UserInfo(props) {
       </div>
       {listType.map((type) => (
         <div key={type}>
-          <h2 className="ml-5 w-40 h-15 mt-10 ml-[-15px] border border-1 rounded bg-green-400">
+          <h2 className="ml-2 w-40 h-15 mt-10  border border-1 rounded bg-green-400">
             {type}
           </h2>
           {/* <ul> */}
