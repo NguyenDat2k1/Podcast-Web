@@ -303,64 +303,31 @@ export default function UserInfo(props) {
         </div>
       </Modal>
 
-      <div className="bg-gray-300 p-4 text-center h-96">
-        Đây là banner của bạn. Bạn có thể tùy chỉnh nội dung và kiểu dáng của
-        banner tại đâyconst {email}.
+      {/* <div className="bg-gray-300 p-4 text-center h-96"> */}
+      <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4 text-center h-96 text-white">
+        <h1 className="text-4xl font-bold mb-2">
+          Welcome to our website
+          <br />
+          in order to improve your English skills
+        </h1>
       </div>
-      <div className="flex justify-between items-center p-4 bg-gray-200">
-        <div className="flex space-x-2">
-          {/* <button
-            className="bg-blue-500 text-white px-2 py-1 rounded-md"
-            onClick={() => A1List()}
-          >
-            A1
-          </button>
-          <button
-            className="bg-blue-500 text-white px-2 py-1 rounded-md"
-            onClick={() => A2List()}
-          >
-            A2
-          </button>
-          <button
-            className="bg-blue-500 text-white px-2 py-1 rounded-md"
-            onClick={() => B1List()}
-          >
-            B1
-          </button>
-          <button
-            className="bg-blue-500 text-white px-2 py-1 rounded-md"
-            onClick={() => B2List()}
-          >
-            B2
-          </button>
 
-          <button
-            className="bg-blue-500 text-white px-2 py-1 rounded-md"
-            onClick={() => C1List()}
-          >
-            C1
-          </button>
-          <button
-            className="bg-blue-500 text-white px-2 py-1 rounded-md"
-            onClick={() => C2List()}
-          >
-            C2
-          </button>
-          <select
-            id="level"
-            className="bg-blue-500 text-white px-2 py-1 rounded-md"
-          >
-            <option value="Business">Business</option>
-            <option value="Comedy">Comedy</option>
-            <option value="Detective">Detective</option>
-          </select> */}
-        </div>
-      </div>
       {listType.map((type) => (
         <div key={type}>
-          <h2 className="ml-2 w-40 h-15 mt-10  border border-1 rounded bg-green-400">
-            {type}
+          <h2 className="mx-auto w-40 mt-10 text-2xl flex items-center relative">
+            <div
+              className="flex-1 bg-green-400 w-40"
+              style={{ height: "2px" }}
+            ></div>
+            <span className="bg-green-400 text-white p-2 rounded-full mx-2">
+              {type}
+            </span>
+            <div
+              className="flex-1 bg-green-400 w-40"
+              style={{ height: "2px" }}
+            ></div>
           </h2>
+
           {/* <ul> */}
           <div className="grid grid-cols-4 gap-4">
             {listPodcast

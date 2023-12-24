@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+
 import Navbar from "@/components/Navbar";
-import { redirect, useRouter } from "next/navigation";
-import YouTube from "react-youtube";
+import { useRouter } from "next/navigation";
+
 import { useSession } from "next-auth/react";
 
 export default function HistorySeen() {
@@ -137,6 +137,22 @@ export default function HistorySeen() {
     }
   };
   console.log("list:", listPodcast);
+
+  // const groupedData = listPodcast.reduce((podcastGroup, currentRecord) => {
+  //   const existingGroup = podcastGroup.find(
+  //     (group) =>
+  //       formatDate(group[0].updatedAt) === formatDate(currentRecord.updatedAt)
+  //   );
+
+  //   if (existingGroup) {
+  //     existingGroup.push(currentRecord);
+  //   } else {
+  //     podcastGroup.push([currentRecord]);
+  //   }
+
+  //   return podcastGroup;
+  // }, []);
+  // console.log("groupedData: ", groupedData);
   return (
     <div>
       <Navbar />
@@ -150,6 +166,11 @@ export default function HistorySeen() {
           </button>
         </div>
       </div>
+      {/* {groupedData.map((childGroup) => (
+        <div key={childGroup}>
+          <h2 className="ml-2 w-40 h-15 mt-10  border border-1 rounded bg-green-400">
+            {childGroup}
+          </h2> */}
       <div className="grid grid-cols-4 gap-4">
         {listPodcast.map((podcast) => (
           <div
@@ -212,6 +233,8 @@ export default function HistorySeen() {
           </div>
         ))}
       </div>
+      {/* </div>
+      ))} */}
     </div>
   );
 }
