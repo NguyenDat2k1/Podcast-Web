@@ -17,11 +17,11 @@ export default function ManageUser() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const router = useRouter();
-  // let email = session?.user?.email;
+  let email = session?.user?.email;
 
-  // if (email == null) {
-  //   router.push(`/login`);
-  // }
+  if (email == null) {
+    router.push(`/homePage`);
+  }
 
   useEffect(() => {
     const fetchData = async () => {
