@@ -14,6 +14,7 @@ import {
   getStorage,
   deleteObject,
 } from "firebase/storage";
+import emailjs from "@emailjs/browser";
 
 export default function LevelDetail({ params }) {
   const { level } = params;
@@ -42,6 +43,9 @@ export default function LevelDetail({ params }) {
   const [type, setType] = useState("Business");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  // const emailSend = "barryallen1742001@example.com";
+  // const subject = "Subject of your email";
+  // const text = "Content of your email";
   let audioPath = "";
   let transcriptPath = "";
   let ytbPath = "";
@@ -180,7 +184,26 @@ export default function LevelDetail({ params }) {
   const handleUpdate = async () => {
     try {
       console.log("updating fileeeee");
-
+      const templateParams = {
+        from_name: "podcastWeb",
+        to_name: "barryallen1742001",
+        messages: "GoodLuck",
+      };
+      console.log("đã vào được đến đây");
+      emailjs
+        .send(
+          "service_vk9agiz",
+          "template_lfpv2t8",
+          templateParams,
+          "hBunhHDWnDYqUNC-W"
+        )
+        .then((response) => {
+          console.log("SUCCESS!", response.status, response.text);
+        })
+        .catch((error) => {
+          console.log("FAILED...", error);
+          console.log("đã vào được đến fail");
+        });
       const deleteExistingAudioFiles = async () => {
         try {
           // Xóa tệp âm thanh
@@ -435,7 +458,7 @@ export default function LevelDetail({ params }) {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         const searchTerms = lowerCaseSearchTerm.split(" ");
 
-        // Kiểm tra xem mỗi từ khóa có xuất hiện trong tên, level hoặc type không
+        // check in name,type,level
         const isInName = searchTerms.every((term) =>
           podcast.name.toLowerCase().includes(term)
         );

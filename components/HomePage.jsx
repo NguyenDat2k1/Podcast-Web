@@ -311,7 +311,152 @@ export default function UserInfo(props) {
           in order to improve your English skills
         </h1>
       </div>
+      {/* {listType.map((type) => (
+        <div key={type}> */}
+      <h2 className="  mx-auto w-40 ml-[-1rem - 5px] mt-10 text-2xl flex items-center relative">
+        {/* <div
+          className="flex-1 bg-green-400 w-40"
+          style={{ height: "2px" }}
+        ></div> */}
+        <span className="bg-green-400 text-white p-2 rounded-full mx-2 whitespace-nowrap ">
+          Top 5 New Podcast
+        </span>
+        {/* <div
+          className="flex-1 bg-green-400 w-40"
+          style={{ height: "2px" }}
+        ></div> */}
+      </h2>
 
+      {/* <ul> */}
+      <div className="grid grid-cols-4 gap-4">
+        {listPodcast.slice(0, 4).map((podcast) => (
+          <div
+            className="border border-gray-300 p-4 relative cursor-pointer"
+            key={podcast.name}
+          >
+            <h2
+              className="cursor-pointer"
+              onClick={(event) =>
+                handleBlockClick(
+                  event,
+                  podcast.name,
+                  podcast._id,
+                  podcast.level
+                )
+              }
+            >
+              {podcast.name}
+            </h2>
+
+            <audio controls>
+              <source src={podcast.audioPath} type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
+
+            <a
+              href={podcast.audioPath}
+              download
+              onClick={(e) => {
+                if (!isDownloading) {
+                  handleAudioDownload(e, podcast);
+                }
+              }}
+            >
+              <span className="mr-2">&#8226;</span> Download Audio
+            </a>
+            <Modal
+              isOpen={showModal}
+              onRequestClose={closeModal}
+              style={{
+                content: {
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  backgroundColor: "white",
+                  padding: "20px",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                },
+              }}
+            >
+              <div className="relative">
+                <span
+                  className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
+                  onClick={closeModal}
+                >
+                  &times;
+                </span>
+                <p>Copy the link below to download the audio:</p>
+                <p>{podcast.audioPath}</p>
+              </div>
+            </Modal>
+            <p className="inline-block ml-2">
+              Download Count: {podcast.audioDowload}
+            </p>
+            <br />
+            <a
+              href={podcast.transcriptPath}
+              download
+              onClick={(e) => {
+                if (!isDownloading) {
+                  handleScriptDownload(e, podcast);
+                }
+              }}
+            >
+              <span className="mr-2">&#8226;</span> Download Script
+            </a>
+            <Modal
+              isOpen={showModal2}
+              onRequestClose={closeModal2}
+              style={{
+                content: {
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  backgroundColor: "white",
+                  padding: "20px",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                },
+              }}
+            >
+              <div className="relative">
+                <span
+                  className="absolute top-2 right-2 cursor-pointer text-gray-500 text-2xl"
+                  onClick={closeModal2}
+                >
+                  &times;
+                </span>
+                <p>Copy the link below to download the Script:</p>
+                <p>{podcast.transcriptPath}</p>
+              </div>
+            </Modal>
+            <p className="inline-block ml-2">
+              Download Count: {podcast.scriptDowload}
+            </p>
+            <div className="relative w-full h-0 pb-[56.25%] mb-4">
+              <YouTube
+                videoId={getYouTubeId1(podcast.ytbPath)}
+                opts={{
+                  width: "100%",
+                  height: "100%",
+                  playerVars: {
+                    autoplay: 0, // Tắt chế độ tự động chạy video
+                  },
+                }}
+                className="absolute inset-0 w-full h-full"
+              />
+            </div>
+            <button
+              className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded text-sm truncate"
+              onClick={() => handleFavoriteClick(podcast)}
+            >
+              Favourite
+            </button>
+          </div>
+        ))}
+        {/* </ul> */}
+      </div>
+      {/* </div>
+      ))} */}
       {listType.map((type) => (
         <div key={type}>
           <h2 className="mx-auto w-40 mt-10 text-2xl flex items-center relative">

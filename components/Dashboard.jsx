@@ -159,12 +159,61 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      <div className="flex justify-center mt-4 ml-20">
+      {/* <div className="flex justify-center mt-4 ml-20">
         <div className="w-5/6 h-96">
           <Bar data={barChartData} options={options} />
         </div>
         <div className="w-5/6 h-96">
           <Line data={lineChartData} options={options} />
+        </div>
+      </div> */}
+      <div className="flex justify-center mt-4 ml-20">
+        <div className="w-5/6 h-96 relative">
+          <div className="absolute top-0 left-0 right-0 flex items-center p-4 bg-white z-10">
+            <select className="p-2 border rounded mr-2">
+              <option value="option1">Năm</option>
+              <option value="option2">Option 2</option>
+            </select>
+            <select className="p-2 border rounded mr-2">
+              <option value="option1">Thánng</option>
+              <option value="option2">Option 2</option>
+            </select>
+
+            <button className="bg-blue-500 text-white p-2 rounded">
+              Apply
+            </button>
+          </div>
+
+          {/* Biểu đồ Bar */}
+          <div className="w-full h-full">
+            <Bar data={barChartData} options={options} />
+          </div>
+          <span className="ml-40 font-bold text-blue-400">
+            Biểu đồ thống kê lượt tải của tài liệu cụ thể{" "}
+          </span>
+        </div>
+
+        <div className="w-5/6 h-96 relative">
+          {/* Thêm selectbox và button */}
+          <div className="absolute top-0 left-0 right-0 flex items-center p-4 bg-white z-10">
+            <select className="p-2 border rounded mr-2">
+              {/* Các options của selectbox */}
+              <option value="option1">Option 1</option>
+              <option value="option2">Option 2</option>
+              {/* ...Thêm options khác nếu cần*/}
+            </select>
+            <button className="bg-blue-500 text-white p-2 rounded">
+              Apply
+            </button>
+          </div>
+
+          {/* Biểu đồ Line */}
+          <div className="w-full h-full">
+            <Line data={lineChartData} options={options} />
+          </div>
+          <span className="ml-60 font-bold text-blue-400">
+            Biểu đồ thống kê lượt tải của thể loại, level
+          </span>
         </div>
       </div>
     </div>
