@@ -165,7 +165,13 @@ export default function LevelDetail({ params }) {
           ytbPath: videoSource,
         }),
       });
-
+      // const resListUser = await fetch("/api/getAllUser", {
+      //   method: "GET",
+      //   headers: {
+      //     "Content-type": "application/json",
+      //   },
+      // });
+      // const users = await resListUser.json();
       if (res.ok) {
         setUpdateFlag((prev) => !prev);
         setIsPopupOpen(false);
@@ -173,6 +179,26 @@ export default function LevelDetail({ params }) {
         setDescribe("");
         setType("Business");
         setVideoSource("");
+        const templateParams = {
+          from_name: "podcastWeb",
+          to_name: "barryallen1742001",
+          message: "New documents has come",
+        };
+        console.log("đã vào được đến đây");
+        emailjs
+          .send(
+            "service_vk9agiz",
+            "template_lfpv2t8",
+            templateParams,
+            "hBunhHDWnDYqUNC-W"
+          )
+          .then((response) => {
+            console.log("SUCCESS!", response.status, response.text);
+          })
+          .catch((error) => {
+            console.log("FAILED...", error);
+            console.log("đã vào được đến fail");
+          });
       } else {
         console.log("Podcast registration failed.");
       }
@@ -184,26 +210,7 @@ export default function LevelDetail({ params }) {
   const handleUpdate = async () => {
     try {
       console.log("updating fileeeee");
-      const templateParams = {
-        from_name: "podcastWeb",
-        to_name: "barryallen1742001",
-        messages: "GoodLuck",
-      };
-      console.log("đã vào được đến đây");
-      emailjs
-        .send(
-          "service_vk9agiz",
-          "template_lfpv2t8",
-          templateParams,
-          "hBunhHDWnDYqUNC-W"
-        )
-        .then((response) => {
-          console.log("SUCCESS!", response.status, response.text);
-        })
-        .catch((error) => {
-          console.log("FAILED...", error);
-          console.log("đã vào được đến fail");
-        });
+
       const deleteExistingAudioFiles = async () => {
         try {
           // Xóa tệp âm thanh
@@ -529,7 +536,13 @@ export default function LevelDetail({ params }) {
             className="bg-blue-500 text-white px-2 py-1 rounded-md"
             onClick={() => openPopup()}
           >
-            Thêm
+            Thêm tài liệu
+          </button>
+          <button
+            className="bg-blue-500 text-white px-2 py-1 rounded-md"
+            onClick={() => openPopup()}
+          >
+            Loại TL
           </button>
         </div>
       </div>
@@ -804,7 +817,7 @@ export default function LevelDetail({ params }) {
           </div>
         </div>
       )}
-      <h1 className="mt-16">Chi tiết khối block {level}</h1>
+      {/* <h1 className="mt-16">Chi tiết khối block {level}</h1> */}
 
       <div className="grid grid-cols-4 gap-4">
         {listPodcast.map((podcast) => (
@@ -815,7 +828,7 @@ export default function LevelDetail({ params }) {
               handleBlockClick(event, podcast.name, podcast._id)
             }
           >
-            <h2>{podcast.name}</h2>
+            <h2 className="truncate max-w-[18em]">{podcast.name}</h2>
 
             <audio controls>
               <source src={podcast.audioPath} type="audio/mpeg" />

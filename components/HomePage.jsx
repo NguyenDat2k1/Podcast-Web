@@ -221,7 +221,14 @@ export default function UserInfo(props) {
       router.push(`/login`);
     }
   };
+  const currentDate = new Date();
+  const month = currentDate.getMonth() + 1; //month js is start with 0
+  const year = currentDate.getFullYear();
 
+  // Định dạng chuỗi tháng có 2 chữ số
+  const formattedMonth = month < 10 ? `0${month}` : month;
+
+  const formattedDate = `${formattedMonth}/${year}`;
   const handleAudioDownload = async (e, podcast) => {
     e.preventDefault();
 
@@ -236,6 +243,22 @@ export default function UserInfo(props) {
           podcastID: podcast._id,
         }),
       });
+      const count = await fetch("/api/countAnalysist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: podcast.type,
+          id_podcast: podcast._id,
+          datE: formattedDate,
+        }),
+      });
+      if (count.ok) {
+        console.log("count Analysist oke");
+      } else {
+        console.log("count Analysist  failed.");
+      }
       if (res.ok) {
         setUpdateFlag((prev) => !prev);
         setShowModal(true);
@@ -261,6 +284,22 @@ export default function UserInfo(props) {
           podcastID: podcast._id,
         }),
       });
+      const count = await fetch("/api/countAnalysist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: podcast.type,
+          id_podcast: podcast._id,
+          datE: formattedDate,
+        }),
+      });
+      if (count.ok) {
+        console.log("count Analysist oke");
+      } else {
+        console.log("count Analysist  failed.");
+      }
       if (res.ok) {
         setUpdateFlag((prev) => !prev);
         setShowModal2(true);
@@ -319,7 +358,7 @@ export default function UserInfo(props) {
           style={{ height: "2px" }}
         ></div> */}
         <span className="bg-green-400 text-white p-2 rounded-full mx-2 whitespace-nowrap ">
-          Top 5 New Podcast
+          Top 4 New Podcast
         </span>
         {/* <div
           className="flex-1 bg-green-400 w-40"
