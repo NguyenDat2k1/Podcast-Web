@@ -11,11 +11,14 @@ import Chart from "chart.js/auto";
 
 export default function Dashboard() {
   const [chartKey, setChartKey] = useState(0);
+  const [searchFlg, setSearchFlg] = useState(0);
+  const [infSearch, setInfSearch] = useState("");
+  const [infTypeAct, setinfTypeAct] = useState("");
   const { data: session } = useSession();
-  const [listPodcast, setListPodcast] = useState([]);
+  const [listActivity, setActivity] = useState([]);
   const [listDocsAnal, setListDocsAnal] = useState([]);
   const [listTypeAnal, setListTypeAnal] = useState([]);
-  const [updateFlag, setUpdateFlag] = useState(false);
+  const [updateFlag, setUpdateFlag] = useState(0);
   const [userCount, setUserCount] = useState(0);
   const [podcastCount, setPodcastCount] = useState(0);
   const [downloadCount, setDownloadCount] = useState(0);
@@ -23,6 +26,11 @@ export default function Dashboard() {
   const [monthForDocs, setMonthForDocs] = useState("");
   const [yearForType, setYearForType] = useState("");
   const [monthForType, setMonthForType] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 8;
   const router = useRouter();
   let email = session?.user?.email;
 
@@ -33,33 +41,41 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [podcastCount, userCount, downloadCount] = await Promise.all([
-          fetch("/api/getPodcastCount", {
-            method: "GET",
-            headers: {
-              "Content-type": "application/json",
-            },
-          }),
-          fetch("/api/getUserCount", {
-            method: "GET",
-            headers: {
-              "Content-type": "application/json",
-            },
-          }),
-          fetch("/api/getDownloadCount", {
-            method: "GET",
-            headers: {
-              "Content-type": "application/json",
-            },
-          }),
-        ]);
+        const [podcastCount, userCount, downloadCount, lstActivity] =
+          await Promise.all([
+            fetch("/api/getPodcastCount", {
+              method: "GET",
+              headers: {
+                "Content-type": "application/json",
+              },
+            }),
+            fetch("/api/getUserCount", {
+              method: "GET",
+              headers: {
+                "Content-type": "application/json",
+              },
+            }),
+            fetch("/api/getDownloadCount", {
+              method: "GET",
+              headers: {
+                "Content-type": "application/json",
+              },
+            }),
+            fetch("/api/getAllActivity", {
+              method: "GET",
+              headers: {
+                "Content-type": "application/json",
+              },
+            }),
+          ]);
 
-        const [podcasts, users, downloads] = await Promise.all([
+        const [podcasts, users, downloads, activities] = await Promise.all([
           podcastCount.json(),
           userCount.json(),
           downloadCount.json(),
+          lstActivity.json(),
         ]);
-
+        console.log("activities: ", activities);
         if (podcasts) {
           console.log("user count : ", users.userCount);
 
@@ -68,10 +84,13 @@ export default function Dashboard() {
               accumulator + currentPodcast.totalDownloads,
             0
           );
-          const topPodcasts = downloads
-            .sort((a, b) => b.totalDownloads - a.totalDownloads)
-            .slice(0, 5);
-          await setListPodcast(topPodcasts);
+          // const topPodcasts = downloads
+          //   .sort((a, b) => b.totalDownloads - a.totalDownloads)
+          //   .slice(0, 5);
+          // await setListPodcast(topPodcasts);
+
+          await setSearchResults(activities);
+          await setActivity(activities);
           await setPodcastCount(podcasts.podcastCount);
           await setUserCount(users.userCount);
 
@@ -192,9 +211,11 @@ export default function Dashboard() {
 
         // Tìm các object có trùng name là 'abc'
         const filteredArray = mergedArray.filter((item) => item.datE === datE);
-        console.log("filteredArray : ", filteredArray);
+        filteredArray.sort((a, b) => b.counT - a.counT);
+        const top5 = filteredArray.slice(0, 5);
+        console.log("filteredArray : ", top5);
         // .filter((item) => item !== null);
-        setListDocsAnal(filteredArray);
+        setListDocsAnal(top5);
         setChartKey((prevKey) => prevKey + 1);
         console.log("mergedArray: ", mergedArray);
       } else {
@@ -273,6 +294,7 @@ export default function Dashboard() {
         // Chuyển đổi Map thành mảng để có được danh sách cuối cùng của các bản ghi
         const finalFilteredArray = Array.from(typeMap.values());
         finalFilteredArray.sort((a, b) => b.counT - a.counT);
+
         console.log("filteredArray : ", filteredArray);
         // .filter((item) => item !== null);
         setListTypeAnal(finalFilteredArray);
@@ -291,6 +313,84 @@ export default function Dashboard() {
     { id: `${podcastCount}`, title: "PODCASTS" },
     { id: "6", title: "LEVEL" },
   ];
+
+  const getPaginatedData = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return listActivity.slice(startIndex, endIndex);
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  useEffect(() => {
+    const searchInList = () => {
+      console.log("list activity: ", listActivity);
+      const results = listActivity.filter((activities) => {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        const searchTerms = lowerCaseSearchTerm.split(" ");
+        console.log("đang search...");
+        // Kiểm tra xem mỗi từ khóa có xuất hiện trong tên, level hoặc type không
+        const isInEmail = searchTerms.every((term) =>
+          activities.user.toLowerCase().includes(term)
+        );
+        const isInDate = searchTerms.some((term) =>
+          activities.createdAt.toLowerCase().includes(term)
+        );
+        const isInActivity = searchTerms.some((term) =>
+          activities.activity.toLowerCase().includes(term)
+        );
+
+        return isInEmail || isInDate || isInActivity;
+      });
+      console.log("result: ", results);
+      setActivity(results);
+    };
+
+    searchInList();
+  }, [searchFlg]);
+
+  //searchinput Activity
+  const handleSearchInputChange = () => {
+    console.log(infSearch);
+    if (infSearch == "") {
+      if (infTypeAct) {
+        setActivity(searchResults);
+        setSearchTerm(infTypeAct);
+        setSearchFlg((prevKey) => prevKey + 1);
+      } else {
+        setUpdateFlag((prevKey) => prevKey + 1);
+      }
+    } else {
+      setSearchTerm(infSearch);
+      setSearchFlg((prevKey) => prevKey + 1);
+      console.log("searchFlg: ", searchFlg);
+    }
+  };
+
+  //typeActivity
+  const handleSelectTypeActChange = (selectedValues) => {
+    let newValue = selectedValues.toString();
+    setActivity(searchResults);
+
+    setinfTypeAct(newValue);
+    console.log("selectedValues: ", newValue);
+    console.log("list activity: ", listActivity);
+    if (newValue == "") {
+      console.log("vào if select1");
+      if (infSearch) {
+        console.log("vào if select2");
+        setSearchTerm(infSearch);
+        setSearchFlg((prevKey) => prevKey + 1);
+      } else {
+        setUpdateFlag((prevKey) => prevKey + 1);
+      }
+    } else {
+      setSearchTerm(newValue);
+      setSearchFlg((prevKey) => prevKey + 1);
+    }
+  };
   console.log("chart key: ", chartKey);
   return (
     <div>
@@ -468,8 +568,87 @@ export default function Dashboard() {
               ))}
             </tbody>
           ) : null}
-          {/* Thêm dòng dữ liệu khác nếu cần */}
         </table>
+      </div>
+      <div className="mt-20"></div>
+      <div className="flex justify-center mt-4 ml-20">
+        <div className="w-4/6">
+          <div className="flex items-center mb-4">
+            <div className="flex-grow">
+              <input
+                type="text"
+                placeholder="Tìm kiếm..."
+                className="p-2 border rounded w-full mr-2"
+                onChange={(e) => setInfSearch(e.target.value)}
+              />
+            </div>
+            <button
+              className="p-2 border rounded bg-blue-400"
+              onClick={handleSearchInputChange}
+            >
+              Tìm kiếm
+            </button>
+            <select
+              className="p-2 border rounded"
+              // multiple
+              onChange={(e) => {
+                const selectedValues = Array.from(
+                  e.target.selectedOptions,
+                  (option) => option.value
+                );
+                handleSelectTypeActChange(selectedValues);
+              }}
+            >
+              <option value="">Optional</option>
+              <option value="Script">Download(script)</option>
+              <option value="Audio">Download(audio)</option>
+              <option value="Business">Subsribe(Business)</option>
+              <option value="Comedy">Subcribe(Comedy)</option>
+              <option value="Detective">Subscribe(Detective)</option>
+              <option value="unBusiness">Unsubscribe(Business)</option>
+              <option value="unComedy">Unsubscribe(Comedy)</option>
+              <option value="unDetective">Unsubscribe(Detective)</option>
+              {/* Add more options as needed */}
+            </select>
+          </div>
+
+          {/* Additional Table */}
+          <table className="w-full border border-black">
+            {/* Header */}
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="p-2 border">User</th>
+                <th className="p-2 border">Date</th>
+                <th className="p-2 border">Activity</th>
+              </tr>
+            </thead>
+            {/* Data */}
+            <tbody>
+              {getPaginatedData().map((rowData, index) => (
+                <tr key={index}>
+                  <td className="border text-center">{rowData.user}</td>
+                  <td className="border text-center">{rowData.createdAt}</td>
+                  <td className="border text-center">{rowData.activity}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="flex justify-center mt-4">
+            {[...Array(Math.ceil(listActivity.length / itemsPerPage))].map(
+              (_, index) => (
+                <button
+                  key={index}
+                  className={`p-2 mx-2 border ${
+                    currentPage === index + 1 ? "bg-gray-300" : ""
+                  }`}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              )
+            )}
+          </div>
+        </div>
       </div>
       <div className="mt-20"></div>
     </div>

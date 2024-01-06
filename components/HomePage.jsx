@@ -147,7 +147,26 @@ export default function UserInfo(props) {
             podcast_Level: level,
           }),
         });
-
+        let activity = `Đã xem chi tiết ${title}`;
+        console.log("Đã lấy được dữ liệu email, activity : ", {
+          email,
+          activity,
+        });
+        const resActivity = await fetch("/api/addActivity", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            activity: activity,
+          }),
+        });
+        if (resActivity.ok) {
+          console.log("tạo hoạt động xem chi tiết thành công.");
+        } else {
+          console.log("tạo hoạt động xem chi tiết thất bại.");
+        }
         if (res.ok) {
           console.log("cập nhật history podcast thành công.");
         } else {
@@ -254,6 +273,26 @@ export default function UserInfo(props) {
           datE: formattedDate,
         }),
       });
+      let activity = `Đã tải audio của ${podcast.name}`;
+      console.log("Đã lấy được dữ liệu email, activity : ", {
+        email,
+        activity,
+      });
+      const resActivity = await fetch("/api/addActivity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          activity: activity,
+        }),
+      });
+      if (resActivity.ok) {
+        console.log("tạo hoạt động xem chi tiết thành công.");
+      } else {
+        console.log("tạo hoạt động xem chi tiết thất bại.");
+      }
       if (count.ok) {
         console.log("count Analysist oke");
       } else {
@@ -295,6 +334,26 @@ export default function UserInfo(props) {
           datE: formattedDate,
         }),
       });
+      let activity = `Đã tải script của ${podcast.name}`;
+      console.log("Đã lấy được dữ liệu email, activity : ", {
+        email,
+        activity,
+      });
+      const resActivity = await fetch("/api/addActivity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          activity: activity,
+        }),
+      });
+      if (resActivity.ok) {
+        console.log("tạo hoạt động xem chi tiết thành công.");
+      } else {
+        console.log("tạo hoạt động xem chi tiết thất bại.");
+      }
       if (count.ok) {
         console.log("count Analysist oke");
       } else {
