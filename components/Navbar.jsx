@@ -161,6 +161,13 @@ const Navbar = (props) => {
               )}
             </li>
             <li className="relative">
+              <Link href="/quizz">
+                <button className="text-white border border-blue-400 rounded px-2 py-1">
+                  Quizz
+                </button>
+              </Link>
+            </li>
+            <li className="relative">
               {session?.user?.name === "Admin" && (
                 <Link href="/listType">
                   <button className="text-white border border-blue-400 rounded px-2 py-1">

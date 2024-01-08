@@ -13,9 +13,7 @@ export default function HistorySeen() {
   const [updateFlag, setUpdateFlag] = useState(false);
   const [user_ID, setUser_ID] = useState("");
   let email = session?.user?.email;
-  let audioPath = "";
-  let transcriptPath = "";
-  let ytbPath = "";
+
   const router = useRouter();
   if (email == null) {
     router.push(`/homePage`);
@@ -71,14 +69,6 @@ export default function HistorySeen() {
 
     getListPodcast();
   }, [updateFlag]);
-
-  const getYouTubeId1 = (url) => {
-    console.log("url is here", url);
-    const match = url.match(
-      /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-    );
-    return match && match[1];
-  };
 
   const handleBlockClick = (event, title, id, level) => {
     const isClickedInsideBlock =
