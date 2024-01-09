@@ -15,10 +15,15 @@ export default function Quizz() {
   const [addFlag, setAddFlag] = useState(false);
   const [displayFlag, setDisplayFlag] = useState(false);
   const [editFlag, setEditFlag] = useState(false);
-  const [user_ID, setUser_ID] = useState("");
   const [numQuizz, setNumQuizz] = useState("");
   const [ques, setQues] = useState("");
   const [quesToSpeak, setQuesToSpeak] = useState("");
+  const [rate, setRate] = useState(1);
+  const [volume, setVolume] = useState(1);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [quizzFlg, setQuizzFlg] = useState(false);
+
   let email = session?.user?.email;
   const maxLines = 3;
   const [yourAnswer, setYourAnswer] = useState("");
@@ -50,25 +55,60 @@ export default function Quizz() {
     getListPodcast();
   }, [updateFlag]);
 
+  const handleVolumeChange = (e) => {
+    setVolume(e.target.value);
+  };
+  const handleRateChange = (e) => {
+    setRate(e.target.value);
+  };
   const handleSpeakQues = () => {
     const utterance = new SpeechSynthesisUtterance(quesToSpeak);
-    window.speechSynthesis.speak(utterance);
+    utterance.rate = rate;
+    if (isPlaying) {
+      window.speechSynthesis.cancel();
+    } else {
+      utterance.volume = volume;
+      // utterance.voice = voices[0];
+      window.speechSynthesis.speak(utterance);
+    }
+
+    setIsPlaying(!isPlaying);
+    utterance.onend = function () {
+      setIsPlaying(false);
+    };
   };
-  const dropdownValues = [
-    { id: 1, detail: "my name is barry allen" },
-    { id: 2, detail: "my name is barry allen" },
-    { id: 3, detail: "my name is barry allen" },
-    { id: 4, detail: "my name is barry allen" },
-    { id: 5, detail: "my name is barry allen" },
-    { id: 6, detail: "my name is barry allen" },
-    { id: 7, detail: "my name is barry allen" },
-    { id: 8, detail: "my name is barry allen" },
-    { id: 9, detail: "my name is barry allen" },
-    { id: 10, detail: "my name is barry allen" },
-  ];
+  const handleNextClick = () => {
+    const index = listQuizz.findIndex((quizz) => quizz._id === idQuizz);
+
+    // Nếu tìm thấy đối tượng có id trùng và vị trí không phải là cuối cùng
+    if (index !== -1 && index < listQuizz.length - 1) {
+      // Lấy đối tượng đứng sau nó
+      const nextQuizz = listQuizz[index + 1];
+      takeTheQuizz(nextQuizz, numQuizz + 1);
+      console.log(nextQuizz);
+    } else {
+      console.log("next quizz");
+    }
+  };
+  const handlePrevClick = () => {
+    const index = listQuizz.findIndex((quizz) => quizz._id === idQuizz);
+
+    // Nếu tìm thấy đối tượng có id trùng và vị trí không phải là cuối cùng
+    if (index !== -1 && index < listQuizz.length - 1) {
+      // Lấy đối tượng đứng sau nó
+      const prevQuizz = listQuizz[index - 1];
+      takeTheQuizz(prevQuizz, numQuizz - 1);
+      console.log(prevQuizz);
+    } else {
+      console.log("next quizz");
+    }
+  };
   const handleCheck = () => {
     setDisplayFlag(true);
     setIsCheck(quesToSpeak.toLowerCase() === yourAnswer.toLowerCase());
+    if (quesToSpeak.toLowerCase() === yourAnswer.toLowerCase()) {
+      setIsCorrect(true);
+    }
     console.log(
       "ket quả: ",
       quesToSpeak.toLowerCase() === yourAnswer.toLowerCase()
@@ -81,9 +121,14 @@ export default function Quizz() {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
 
   const takeTheQuizz = (quizz, numOfQuizz) => {
+    setIsCheck(true);
+    setIsCorrect(false);
     setQuesToSpeak(quizz.ques);
     setIDQuizz(quizz._id);
     setNumQuizz(numOfQuizz);
+
+    setQuizzFlg(numOfQuizz === listQuizz.length);
+    console.log("quizzFlg : ", numOfQuizz === listQuizz.length);
   };
 
   const openPopup = () => {
@@ -192,6 +237,7 @@ export default function Quizz() {
       }
     }
   };
+  console.log("numQuizz === 1 : ", numQuizz === 1);
 
   return (
     <div>
@@ -328,8 +374,40 @@ export default function Quizz() {
           className="bg-blue-500 text-white px-2 py-1 rounded-md"
           onClick={handleSpeakQues}
         >
-          Nghe Quizz
+          {isPlaying ? "Dừng" : "Phát"}
         </button>
+        <div id="rate-control" className="flex items-center gap-4">
+          <label htmlFor="rate" className="text-sm">
+            Speed:
+          </label>
+          <input
+            type="range"
+            min="0.5"
+            max="2"
+            value={rate}
+            step="0.1"
+            id="rate"
+            onChange={handleRateChange}
+            className="w-1/6"
+          />
+          <span className="text-sm">{rate}</span>
+        </div>
+        <div id="rate-control" className="flex items-center gap-4">
+          <label htmlFor="rate" className="text-sm">
+            Volume:
+          </label>
+          <input
+            type="range"
+            min="0.5"
+            max="2"
+            value={volume}
+            step="0.1"
+            id="rate"
+            onChange={handleVolumeChange}
+            className="w-1/6"
+          />
+          <span className="text-sm">{volume}</span>
+        </div>
         <p>Câu Quizz số {numQuizz}</p>
         <input
           type="text"
@@ -338,7 +416,7 @@ export default function Quizz() {
           placeholder="Nhập giá trị cho Input 1"
           className={`mt-2 p-2 bg-white border border-gray-300 rounded-md block w-full h-20 ${
             isCheck ? "" : "border-red-500 border-4"
-          }`}
+          } ${isCorrect ? "border-green-500 border-4" : ""}`}
         />
         {displayFlag ? <p>Đáp án đúng là: {quesToSpeak}</p> : ""}
         <div className="flex justify-center space-x-4 mt-4">
@@ -358,14 +436,22 @@ export default function Quizz() {
       </div>
       <div className="flex justify-center space-x-4  absolute  left-1/2 transform -translate-x-1/2">
         <button
-          className="bg-green-400 text-white px-4 py-2 rounded-md"
-          // onClick={handleButtonClick}
+          className={`bg-green-400 text-white px-4 py-2 rounded-md ${
+            numQuizz === 1
+              ? "cursor-not-allowed bg-gray-500"
+              : "hover:bg-green-500"
+          }`}
+          onClick={handlePrevClick}
+          disabled={numQuizz === 1}
         >
           &lt;&lt; Câu trước
         </button>
         <button
-          className="bg-green-400 text-white px-4 py-2 rounded-md"
-          // onClick={handleButtonClick}
+          className={`bg-green-400 text-white px-4 py-2 rounded-md ${
+            quizzFlg ? "cursor-not-allowed bg-gray-500" : "hover:bg-green-500"
+          }`}
+          onClick={handleNextClick}
+          disabled={quizzFlg}
         >
           Câu tiếp &gt;&gt;
         </button>

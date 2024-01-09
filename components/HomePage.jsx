@@ -14,6 +14,7 @@ export default function UserInfo(props) {
   const [updateFlag, setUpdateFlag] = useState(false);
   const [user_ID, setUser_ID] = useState("");
   const [listPodcast, setListPodcast] = useState([]);
+  const [listSubscribe, setListSubscribe] = useState([]);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [audioDownload, setAudioDownload] = useState(0);
   const [scriptDownload, setScriptDownload] = useState(0);
@@ -36,7 +37,7 @@ export default function UserInfo(props) {
   };
 
   const getYouTubeId1 = (url) => {
-    console.log("url is here", url);
+    // console.log("url is here", url);
     const match = url.match(
       /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
     );
@@ -57,6 +58,25 @@ export default function UserInfo(props) {
           },
         });
         const podcasts = await resListPodcast.json();
+        const getListSubscribe = await fetch("/api/getAllSubscribe", {
+          method: "GET",
+          headers: {
+            "Content-type": "application/json",
+          },
+        });
+        const subscribes = await getListSubscribe.json();
+        const filteredSubscribes = subscribes.filter(
+          (subscribe) => subscribe.email == email
+        );
+        console.log(
+          "filteredSubscribesaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          filteredSubscribes
+        );
+        const typesArray = filteredSubscribes.map(
+          (subscribe) => subscribe.type
+        );
+
+        setListSubscribe(typesArray);
         if (email != null) {
           const resListFavourite = await fetch("/api/getFavouriteList", {
             method: "GET",
@@ -72,10 +92,13 @@ export default function UserInfo(props) {
             body: JSON.stringify({ email }),
           });
           const { user } = await resUserExists.json();
+          console.log;
+
           if (user) {
             await setUser_ID(user._id);
 
             console.log("đã lấy được id user:", user_ID);
+            console.log("đã lấy được ListSubscribe:", typesArray);
           }
           if (user.isActive == "unactive") {
             setUnActive(true);
@@ -187,6 +210,8 @@ export default function UserInfo(props) {
       try {
         console.log("đang thả tym");
         console.log("email fetching: ", email);
+        console.log("listSubscribe: ", listSubscribe);
+
         try {
           // Gọi API để kiểm tra user và lấy userID
           const resUserExists = await fetch("api/userExists", {
@@ -220,11 +245,6 @@ export default function UserInfo(props) {
               (p) => p._id !== podcast._id
             );
             setListPodcast(updatedList);
-
-            // Cập nhật trạng thái yêu thích
-            // setFavoriteStates((prev) =>
-            //   prev.map((state, i) => (i === index ? !state : state))
-            // );
 
             console.log("thả tym podcast thành công.");
           } else {
@@ -369,6 +389,31 @@ export default function UserInfo(props) {
       console.error("Error updating script download count:", error);
     }
   };
+
+  const handleSub = async (type) => {
+    console.log("đang subscribe hoặc un-sub ");
+    console.log("status fetching: ", email, type);
+    try {
+      const flg = listSubscribe.includes(type) ? 0 : 1;
+      console.log("flg: ", flg);
+      const resIsSub = await fetch("api/setIsSubscribe", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ email: email, type: type, flg: flg }),
+      });
+      const { user } = await resIsSub.json();
+      if (user) {
+        console.log("đã cập nhật sub thành công:", user);
+        setUpdateFlag((prev) => !prev);
+        // setSubFlag((prev) => !prev);
+      }
+    } catch (error) {
+      console.error("Lỗi khi xử lý isSubscribe:", error);
+    }
+  };
+  console.log("listSubscribe", listSubscribe);
   return (
     <div>
       <Navbar />
@@ -565,12 +610,20 @@ export default function UserInfo(props) {
             <span className="bg-green-400 text-white p-2 rounded-full mx-2">
               {type}
             </span>
+
             <div
               className="flex-1 bg-green-400 w-40"
               style={{ height: "2px" }}
             ></div>
           </h2>
-
+          {listSubscribe ? (
+            <button
+              className="text-white p-2 rounded-full mx-2 bg-blue-400"
+              onClick={() => handleSub(type)}
+            >
+              {listSubscribe.includes(type) ? "Đã đăng ký" : "Đăng ký"}
+            </button>
+          ) : null}
           {/* <ul> */}
           <div className="grid grid-cols-4 gap-4">
             {listPodcast

@@ -12,7 +12,7 @@ const Navbar = (props) => {
   const { data: session } = useSession();
   const [updateFlag, setUpdateFlag] = useState(false);
   const [listPodcast, setListPodcast] = useState([]);
-
+  const [Open, setOpen] = useState(false);
   const router = useRouter();
 
   let email = session?.user?.email;
@@ -74,7 +74,9 @@ const Navbar = (props) => {
   const toggleProfileMenu = () => {
     setProfileMenuOpen(!profileMenuOpen);
   };
-
+  const handleOpen = () => {
+    setOpen(!Open);
+  };
   const handlePodcastClick = (event, level, title, id) => {
     event.stopPropagation();
 
@@ -185,6 +187,33 @@ const Navbar = (props) => {
                 </Link>
               )}
             </li>
+
+            <li className="relative">
+              {session?.user?.name !== "Admin" &&
+                session?.user?.email !== null && (
+                  <button
+                    className="text-white border border-blue-400 rounded px-2 py-1"
+                    onClick={() => handleOpen()}
+                  >
+                    Notification
+                  </button>
+                )}
+              {Open && (
+                <div className="absolute top-full left-0 bg-blue-400 w-48 mt-2 z-50">
+                  <Link href="/profile">
+                    <div className="p-2 hover:bg-blue-700">Trang Cá Nhân</div>
+                  </Link>
+                  <div
+                    className="p-2 hover:bg-blue-700 cursor-pointer"
+                    onClick={() => signOut()}
+                    // onClick={handleSignOut}
+                  >
+                    Logout
+                  </div>
+                </div>
+              )}
+            </li>
+
             <li className="relative">
               {email == null && (
                 <Link href="/login">
@@ -194,7 +223,6 @@ const Navbar = (props) => {
                 </Link>
               )}
             </li>
-
             <li className="relative">
               <button
                 className="text-white pt-1.5"
