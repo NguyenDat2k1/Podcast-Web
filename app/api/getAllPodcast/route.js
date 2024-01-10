@@ -25,7 +25,7 @@ export async function GET() {
     // Sử dụng Mongoose để lấy tất cả các bản ghi và sắp xếp theo chiều giảm dần của createdAt
     const podcasts = await Podcast.find().sort({ createdAt: -1 });
 
-    console.log("podcasts: ", podcasts);
+    // console.log("podcasts: ", podcasts);
     return NextResponse.json(podcasts);
   } catch (error) {
     console.error("Error fetching podcasts:", error);

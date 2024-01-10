@@ -403,11 +403,13 @@ export default function UserInfo(props) {
         },
         body: JSON.stringify({ email: email, type: type, flg: flg }),
       });
-      const { user } = await resIsSub.json();
-      if (user) {
+      const user = await resIsSub.json();
+      if (resIsSub.ok) {
         console.log("đã cập nhật sub thành công:", user);
         setUpdateFlag((prev) => !prev);
         // setSubFlag((prev) => !prev);
+      } else {
+        console.log("vào else rồi");
       }
     } catch (error) {
       console.error("Lỗi khi xử lý isSubscribe:", error);
