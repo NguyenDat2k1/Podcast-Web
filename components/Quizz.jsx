@@ -94,11 +94,12 @@ export default function Quizz() {
     const index = listQuizz.findIndex((quizz) => quizz._id === idQuizz);
 
     // Nếu tìm thấy đối tượng có id trùng và vị trí không phải là cuối cùng
-    if (index !== -1 && index < listQuizz.length - 1) {
+    if (index !== 1 || index < listQuizz.length + 1) {
       // Lấy đối tượng đứng sau nó
       const prevQuizz = listQuizz[index - 1];
       takeTheQuizz(prevQuizz, numQuizz - 1);
       console.log(prevQuizz);
+      console.log(numQuizz - 1);
     } else {
       console.log("next quizz");
     }
@@ -126,7 +127,7 @@ export default function Quizz() {
     setQuesToSpeak(quizz.ques);
     setIDQuizz(quizz._id);
     setNumQuizz(numOfQuizz);
-
+    setDisplayFlag(false);
     setQuizzFlg(numOfQuizz === listQuizz.length);
     console.log("quizzFlg : ", numOfQuizz === listQuizz.length);
   };
@@ -250,24 +251,30 @@ export default function Quizz() {
           >
             List Quizz
           </button>
-          <button
-            className=" ml-5 bg-green-500 text-white px-4 py-2 rounded-md"
-            onClick={isAdd}
-          >
-            Thêm
-          </button>
-          <button
-            className="ml-5 bg-yellow-500 text-white px-4 py-2 rounded-md"
-            onClick={isUpdate}
-          >
-            Sửa
-          </button>
-          <button
-            className="ml-5 bg-red-500 text-white px-4 py-2 rounded-md"
-            onClick={handleDelete}
-          >
-            xóa
-          </button>
+          {session?.user?.name === "Admin" && (
+            <button
+              className=" ml-5 bg-green-500 text-white px-4 py-2 rounded-md"
+              onClick={isAdd}
+            >
+              Thêm
+            </button>
+          )}
+          {session?.user?.name === "Admin" && (
+            <button
+              className="ml-5 bg-yellow-500 text-white px-4 py-2 rounded-md"
+              onClick={isUpdate}
+            >
+              Sửa
+            </button>
+          )}
+          {session?.user?.name === "Admin" && (
+            <button
+              className="ml-5 bg-red-500 text-white px-4 py-2 rounded-md"
+              onClick={handleDelete}
+            >
+              xóa
+            </button>
+          )}
           {addFlag && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
               <div className="bg-white p-4 rounded-lg">

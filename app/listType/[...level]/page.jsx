@@ -43,13 +43,15 @@ export default function LevelDetail({ params }) {
   const [type, setType] = useState("Business");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  // const emailSend = "barryallen1742001@example.com";
-  // const subject = "Subject of your email";
-  // const text = "Content of your email";
+
   let audioPath = "";
   let transcriptPath = "";
   let ytbPath = "";
+  const router = useRouter();
   let email = session?.user?.email;
+  if (email == null) {
+    router.push(`/homePage`);
+  }
   useEffect(() => {
     const getListPodcast = async () => {
       try {
@@ -165,13 +167,9 @@ export default function LevelDetail({ params }) {
           ytbPath: videoSource,
         }),
       });
-      // const resListUser = await fetch("/api/getAllUser", {
-      //   method: "GET",
-      //   headers: {
-      //     "Content-type": "application/json",
-      //   },
-      // });
-      // const users = await resListUser.json();
+      let notification = `Thể loại ${type} đã lên sóng ${podcastName}`;
+      let tempType = type;
+      console.log("notification: ", notification);
       if (res.ok) {
         setUpdateFlag((prev) => !prev);
         setIsPopupOpen(false);
@@ -199,6 +197,45 @@ export default function LevelDetail({ params }) {
             console.log("FAILED...", error);
             console.log("đã vào được đến fail");
           });
+        //create notification cho các người đã sub
+        const resUserSub = await fetch("/api/getUserSub", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            type: tempType,
+          }),
+        });
+        console.log("tempType: ", tempType);
+        const userSub = await resUserSub.json();
+        console.log("userSub: ", userSub);
+        const promises = userSub.map(async (emailSub) => {
+          console.log("email : ", emailSub);
+          console.log("notification : ", notification);
+          try {
+            const res = await fetch("/api/createNotification", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                email: emailSub,
+                notification: notification,
+              }),
+            });
+
+            // Handle the response if needed
+            const result = await res.json();
+            if (result.ok) {
+              console.log("response after create notification", result);
+            } else {
+              console.log("đã vào élse va failed");
+            }
+          } catch (error) {
+            console.error("Error while sending notification:", error);
+          }
+        });
       } else {
         console.log("Podcast registration failed.");
       }
@@ -359,7 +396,6 @@ export default function LevelDetail({ params }) {
       console.error("Lỗi trong handleUpdate:", error);
     }
   };
-  const router = useRouter();
 
   const openPopup = () => {
     setIsPopupOpen(true);

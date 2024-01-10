@@ -12,6 +12,7 @@ const Navbar = (props) => {
   const { data: session } = useSession();
   const [updateFlag, setUpdateFlag] = useState(false);
   const [listPodcast, setListPodcast] = useState([]);
+  const [listNoti, setListNoti] = useState([]);
   const [Open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -30,11 +31,22 @@ const Navbar = (props) => {
         });
 
         const podcasts = await resListPodcast.json();
+        const resListNoti = await fetch("/api/getAllNotification", {
+          method: "GET",
+          headers: {
+            "Content-type": "application/json",
+          },
+        });
 
+        const notifications = await resListNoti.json();
+        const notiList = notifications.filter(
+          (notification) => notification.email === session?.user?.email
+        );
         console.log(podcasts);
-
+        console.log("notifications: ", notiList);
         if (Array.isArray(podcasts)) {
           setListPodcast(podcasts);
+          setListNoti(notiList);
         } else {
           console.error("Invalid data structure in the response:");
         }
@@ -74,8 +86,28 @@ const Navbar = (props) => {
   const toggleProfileMenu = () => {
     setProfileMenuOpen(!profileMenuOpen);
   };
-  const handleOpen = () => {
+  const handleOpen = async () => {
+    // try {
+    const resReaden = await fetch("/api/readen", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+      }),
+    });
+    const userSub = await resReaden.json();
     setOpen(!Open);
+    setUpdateFlag((prev) => !prev);
+    if (userSub.ok) {
+      console.log("userSub: ", userSub);
+    } else {
+      console.log("lỗi vào else: ");
+    }
+    // } catch (e) {
+    //   console.log("lỗi khi thao tác mở thông báo: ");
+    // }
   };
   const handlePodcastClick = (event, level, title, id) => {
     event.stopPropagation();
@@ -96,6 +128,10 @@ const Navbar = (props) => {
     { key: "Comedy", value: "Comedy" },
     { key: "Detective", value: "Detective" },
   ];
+  console.log(
+    "true or false: ",
+    listNoti.filter((notification) => notification.isRead === 0)
+  );
   return (
     <div>
       <nav className="bg-blue-400 p-4">
@@ -192,7 +228,13 @@ const Navbar = (props) => {
               {session?.user?.name !== "Admin" &&
                 session?.user?.email !== null && (
                   <button
-                    className="text-white border border-blue-400 rounded px-2 py-1"
+                    className={`text-white border rounded px-2 py-1 ${
+                      listNoti.filter(
+                        (notification) => notification.isRead === 0
+                      ).length > 0
+                        ? "bg-red-500"
+                        : "bg-blue-400"
+                    }`}
                     onClick={() => handleOpen()}
                   >
                     Notification
@@ -200,16 +242,11 @@ const Navbar = (props) => {
                 )}
               {Open && (
                 <div className="absolute top-full left-0 bg-blue-400 w-48 mt-2 z-50">
-                  <Link href="/profile">
-                    <div className="p-2 hover:bg-blue-700">Trang Cá Nhân</div>
-                  </Link>
-                  <div
-                    className="p-2 hover:bg-blue-700 cursor-pointer"
-                    onClick={() => signOut()}
-                    // onClick={handleSignOut}
-                  >
-                    Logout
-                  </div>
+                  {listNoti.map((Notification) => (
+                    <div className="p-2 hover:bg-blue-700">
+                      {Notification.notification}
+                    </div>
+                  ))}
                 </div>
               )}
             </li>

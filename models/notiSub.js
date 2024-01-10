@@ -10,6 +10,10 @@ const notisubSchema = new Schema(
       type: String,
       required: true,
     },
+    isRead: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
